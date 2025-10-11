@@ -26,18 +26,19 @@ export default function BookingPage() {
   const params = useParams();
   const router = useRouter();
   const showtimeId = params.showtimeId;
-  
+
   const [seats, setSeats] = useState<Seat[]>([]);
   const [bookedSeatIds, setBookedSeatIds] = useState<number[]>([]);
   const [selectedSeatIds, setSelectedSeatIds] = useState<number[]>([]);
   const [showtimeInfo, setShowtimeInfo] = useState<ShowtimeInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   const [customerName, setCustomerName] = useState('');
   const [customerEmail, setCustomerEmail] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
 
   useEffect(() => {
     if (showtimeId) {
@@ -50,7 +51,7 @@ export default function BookingPage() {
       setLoading(true);
       const response = await fetch(`/api/seats?showtimeId=${showtimeId}`);
       const result = await response.json();
-      
+
       if (result.success) {
         setSeats(result.data.seats);
         setBookedSeatIds(result.data.bookedSeatIds);
@@ -69,8 +70,8 @@ export default function BookingPage() {
 
   const toggleSeat = (seatId: number) => {
     if (bookedSeatIds.includes(seatId)) return;
-    
-    setSelectedSeatIds(prev => 
+
+    setSelectedSeatIds(prev =>
       prev.includes(seatId)
         ? prev.filter(id => id !== seatId)
         : [...prev, seatId]
@@ -79,7 +80,7 @@ export default function BookingPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (selectedSeatIds.length === 0) {
       alert('請至少選擇一個座位');
       return;
@@ -125,18 +126,18 @@ export default function BookingPage() {
 
   const formatDate = (dateString: string) => {
     if (!dateString) return '';
-    
+
     const parts = dateString.split('T')[0].split('-');
     const year = parseInt(parts[0]);
     const month = parseInt(parts[1]) - 1;
     const day = parseInt(parts[2]);
-    
+
     const date = new Date(year, month, day);
     const days = ['日', '一', '二', '三', '四', '五', '六'];
-    
+
     return `${date.getMonth() + 1}月${date.getDate()}日 星期${days[date.getDay()]}`;
   };
-  
+
   const formatTime = (timeString: string) => {
     if (!timeString) return '';
     return timeString.substring(0, 5);
@@ -144,7 +145,7 @@ export default function BookingPage() {
 
   const getSelectedSeatsDisplay = () => {
     if (selectedSeatIds.length === 0) return '尚未選擇';
-    
+
     return selectedSeatIds
       .map(id => {
         const seat = seats.find(s => s.id === id);
@@ -192,7 +193,7 @@ export default function BookingPage() {
     }
     acc[seat.row_label].push(seat);
     return acc;
-  }, {} as {[key: string]: Seat[]});
+  }, {} as { [key: string]: Seat[] });
 
   const rows = Object.keys(groupedSeats).sort();
 
@@ -200,7 +201,7 @@ export default function BookingPage() {
     <div className="min-h-screen bg-gray-900">
       <header className="bg-gradient-to-r from-red-600 to-red-700 text-white p-6 shadow-2xl">
         <div className="container mx-auto">
-          <Link 
+          <Link
             href={`/movie/${showtimeInfo.movie_id}`}
             className="text-red-100 hover:text-white mb-3 inline-flex items-center gap-2 transition-colors"
           >
@@ -221,7 +222,7 @@ export default function BookingPage() {
           <div className="lg:col-span-2">
             <div className="bg-gray-800 rounded-xl p-6 shadow-xl">
               <h2 className="text-2xl font-bold text-white mb-4">選擇座位</h2>
-              
+
               <div className="mb-8">
                 <div className="bg-gradient-to-b from-gray-700 to-gray-800 text-white text-center py-4 rounded-lg mb-4 shadow-lg">
                   <div className="text-xl font-bold">🎬 銀幕</div>
@@ -238,19 +239,18 @@ export default function BookingPage() {
                       {groupedSeats[row].map(seat => {
                         const isBooked = bookedSeatIds.includes(seat.id);
                         const isSelected = selectedSeatIds.includes(seat.id);
-                        
+
                         return (
                           <button
                             key={seat.id}
                             onClick={() => toggleSeat(seat.id)}
                             disabled={isBooked}
-                            className={`w-11 h-11 rounded-t-xl text-sm font-semibold transition-all duration-200 ${
-                              isBooked
+                            className={`w-11 h-11 rounded-t-xl text-sm font-semibold transition-all duration-200 ${isBooked
                                 ? 'bg-gray-600 text-gray-500 cursor-not-allowed'
                                 : isSelected
-                                ? 'bg-red-600 text-white scale-110 shadow-lg'
-                                : 'bg-green-600 text-white hover:bg-green-500 hover:scale-105'
-                            }`}
+                                  ? 'bg-red-600 text-white scale-110 shadow-lg'
+                                  : 'bg-green-600 text-white hover:bg-green-500 hover:scale-105'
+                              }`}
                             title={`${row}${seat.seat_number}${isBooked ? ' (已售)' : ''}`}
                           >
                             {seat.seat_number}
@@ -282,7 +282,7 @@ export default function BookingPage() {
           <div className="lg:col-span-1">
             <div className="bg-gray-800 rounded-xl p-6 shadow-xl sticky top-6">
               <h3 className="text-2xl font-bold text-white mb-6">訂票資訊</h3>
-              
+
               <div className="mb-6 p-4 bg-gray-700 rounded-lg">
                 <div className="text-gray-400 text-sm mb-2">已選座位</div>
                 <div className="text-white font-semibold text-lg">
@@ -342,7 +342,7 @@ export default function BookingPage() {
                     value={customerPhone}
                     onChange={(e) => setCustomerPhone(e.target.value)}
                     className="w-full px-4 py-3 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-red-600 transition-all"
-                    placeholder="0912-345-678"
+                    placeholder="09xx-xxx-xxx"
                   />
                 </div>
 

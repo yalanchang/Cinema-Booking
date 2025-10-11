@@ -1,5 +1,9 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import Footer from './components/Footer';
+import Header from './components/header';
+
+
 
 export const metadata: Metadata = {
   title: '電影訂票系統',
@@ -13,7 +17,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="zh-TW">
-      <body>{children}</body>
+      <body>
+      <Header /> 
+        {children}
+      <Footer />
+      </body>
     </html>
   );
 }

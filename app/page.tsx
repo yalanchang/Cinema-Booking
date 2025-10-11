@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import Carousel from './components/Carousel';
 
 interface Movie {
   id: number;
@@ -14,7 +15,13 @@ interface Movie {
   release_date: string;
   showtime_count: number;
 }
-
+interface Slide {
+  id: number;
+  image: string;
+  title: string;
+  description: string;
+  link: string;
+}
 interface Showtime {
   id: number;
   movie_id: number;
@@ -30,10 +37,10 @@ export default function Home() {
   const [allShowtimes, setAllShowtimes] = useState<Showtime[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
-  // 篩選條件
   const [selectedDate, setSelectedDate] = useState<string>('');
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<string>('all');
+  const [carouselSlides, setCarouselSlides] = useState<Slide[]>([]);
+
 
   useEffect(() => {
     fetchMoviesAndShowtimes();
@@ -42,31 +49,40 @@ export default function Home() {
   const fetchMoviesAndShowtimes = async () => {
     try {
       setLoading(true);
-      
+
       // 取得所有電影
       const moviesResponse = await fetch('/api/movies');
       const moviesResult = await moviesResponse.json();
-      
+
       if (!moviesResult.success) {
         setError(moviesResult.error || '無法載入電影列表');
         return;
       }
-      
+
       setMovies(moviesResult.data);
+      const slides = moviesResult.data.slice(0, 4).map((movie: Movie) => ({
+        id: movie.id,
+        image: movie.poster_url,
+        title: movie.title,
+        description: movie.description,
+        link: `/movie/${movie.id}`
+      }));
+      
+      setCarouselSlides(slides);
       
       // 取得所有場次（用於篩選）
       const showtimesPromises = moviesResult.data.map((movie: Movie) =>
         fetch(`/api/showtimes?movieId=${movie.id}`).then(res => res.json())
       );
-      
+
       const showtimesResults = await Promise.all(showtimesPromises);
-      const allShowtimesData = showtimesResults.flatMap(result => 
+      const allShowtimesData = showtimesResults.flatMap(result =>
         result.success ? result.data : []
       );
-      
+
       setAllShowtimes(allShowtimesData);
       setError(null);
-      
+
     } catch (err) {
       console.error('Error fetching data:', err);
       setError('網路連線錯誤，請稍後再試');
@@ -79,14 +95,14 @@ export default function Home() {
   const getDateOptions = () => {
     const dates = [];
     const today = new Date();
-    
+
     for (let i = 0; i < 7; i++) {
       const date = new Date(today);
       date.setDate(today.getDate() + i);
       const dateString = date.toISOString().split('T')[0];
       dates.push(dateString);
     }
-    
+
     return dates;
   };
 
@@ -95,17 +111,17 @@ export default function Home() {
     const year = parseInt(parts[0]);
     const month = parseInt(parts[1]) - 1;
     const day = parseInt(parts[2]);
-    
+
     const date = new Date(year, month, day);
     const days = ['日', '一', '二', '三', '四', '五', '六'];
-    
+
     const today = new Date();
     const isToday = date.toDateString() === today.toDateString();
-    
+
     if (isToday) {
       return `今天 ${month + 1}/${day} (${days[date.getDay()]})`;
     }
-    
+
     return `${month + 1}/${day} (${days[date.getDay()]})`;
   };
 
@@ -128,7 +144,7 @@ export default function Home() {
       // 時段篩選
       if (selectedTimeSlot !== 'all') {
         const hour = parseInt(showtime.show_time.split(':')[0]);
-        
+
         switch (selectedTimeSlot) {
           case 'morning': // 早場 (10:00-12:00)
             matchTime = hour >= 10 && hour < 12;
@@ -161,7 +177,7 @@ export default function Home() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-900">
+      <div className="min-h-screen flex items-center justify-center bg-neutral-900">
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-red-600 mb-4"></div>
           <div className="text-white text-xl">載入中...</div>
@@ -172,7 +188,7 @@ export default function Home() {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-900">
+      <div className="min-h-screen flex items-center justify-center bg-neutral-900">
         <div className="text-center">
           <div className="text-red-500 text-xl mb-4">❌ {error}</div>
           <button
@@ -187,37 +203,24 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900">
-      {/* Header */}
-      <header className="bg-gradient-to-r from-red-600 to-red-700 text-white p-6 shadow-2xl sticky top-0 z-50">
-        <div className="container mx-auto">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-4xl font-bold flex items-center gap-3">
-                電影訂票系統
-              </h1>
-            </div>
-            <div className="text-right">
-              <p className="text-sm text-red-100">現正熱映</p>
-              <p className="text-2xl font-bold">{movies.length} 部電影</p>
-            </div>
-          </div>
+    <div className="min-h-screen bg-neutral-900 ">
+      {carouselSlides.length > 0 && (
+        <div className="w-full">
+          <Carousel slides={carouselSlides} autoPlayInterval={5000} />
         </div>
-      </header>
+      )}
 
       {/* 篩選區域 */}
-      <div className="bg-gray-800 border-b border-gray-700">
+      <div className="bg-neutral-900">
         <div className="container mx-auto p-6">
-          <div className="flex flex-col md:flex-row gap-4">
-            {/* 日期選擇 */}
-            <div className="flex-1">
-              <label className="block text-gray-300 text-sm font-semibold mb-2">
-                選擇日期
-              </label>
+          {/* 篩選控制 */}
+          <div className="flex flex-col md:flex-coloum gap-6 md:justify-center md:items-center">
+            {/* 日期 */}
+            <div className="w-full md:w-[280px] relative group">
               <select
                 value={selectedDate}
                 onChange={(e) => setSelectedDate(e.target.value)}
-                className="w-full px-4 py-3 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-red-600 transition-all"
+                className="w-full py-4  text-white focus:outline-none border-b-1 border-transparent  hover:border-[#D26900] hover:text-gray-400 transition-all  duration-300 ease-in-out cursor-pointer peer"
               >
                 <option value="">全部日期</option>
                 {getDateOptions().map(date => (
@@ -226,17 +229,16 @@ export default function Home() {
                   </option>
                 ))}
               </select>
+              <span className="absolute bottom-0 left-1/2 h-0.5 w-0 bg-primary transition-all duration-300 ease-out group-hover:w-full group-hover:left-0 peer-focus:w-full peer-focus:left-0 rounded-full"></span>
+
             </div>
 
-            {/* 時段選擇 */}
-            <div className="flex-1">
-              <label className="block text-gray-300 text-sm font-semibold mb-2">
-              選擇時段
-              </label>
+            {/* 時段 */}
+            <div className="w-full md:w-[280px] relative group">
               <select
                 value={selectedTimeSlot}
                 onChange={(e) => setSelectedTimeSlot(e.target.value)}
-                className="w-full px-4 py-3 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-red-600 transition-all"
+                className="w-full py-4 text-white focus:outline-none border-b-1 border-transparent  hover:text-gray-400 hover:border-[#D26900] transition-all  duration-300 ease-in-out cursor-pointer peer"
               >
                 <option value="all">全部時段</option>
                 <option value="morning">早場 (10:00-12:00)</option>
@@ -244,40 +246,39 @@ export default function Home() {
                 <option value="evening">晚場 (18:00-22:00)</option>
                 <option value="night">深夜場 (22:00-02:00)</option>
               </select>
+              <span className="absolute bottom-0 left-1/2 h-0.5 w-0 bg-primary transition-all duration-300 ease-out group-hover:w-full group-hover:left-0 peer-focus:w-full peer-focus:left-0 rounded-full"></span>
+
             </div>
 
-            {/* 清除篩選 */}
+            {/* 清除按鈕 */}
             {(selectedDate || selectedTimeSlot !== 'all') && (
-              <div className="flex items-end">
-                <button
-                  onClick={() => {
-                    setSelectedDate('');
-                    setSelectedTimeSlot('all');
-                  }}
-                  className="px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-semibold transition-colors"
-                >
-                  清除篩選
-                </button>
-              </div>
+              <button
+                onClick={() => {
+                  setSelectedDate('');
+                  setSelectedTimeSlot('all');
+                }}
+                className="w-full md:w-auto px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold transition-all whitespace-nowrap"
+              >
+                ✖ 清除篩選
+              </button>
             )}
           </div>
 
-          {/* 篩選結果提示 */}
+          {/* 結果提示 */}
           {(selectedDate || selectedTimeSlot !== 'all') && (
-            <div className="mt-4 text-gray-400 text-sm">
-              找到 <span className="text-red-400 font-semibold">{filteredMovies.length}</span> 部符合條件的電影
+            <div className="mt-4 p-3  ">
+              <p className="text-gray-300 text-sm md:text-right">
+                找到 <span className="text-red-400 font-bold">{filteredMovies.length}</span> 部符合條件的電影
+              </p>
             </div>
           )}
         </div>
       </div>
-
-      {/* Main Content */}
       <main className="container mx-auto p-6">
         <div className="mb-8">
           <h2 className="text-3xl font-bold text-white mb-2">熱映中</h2>
-          <p className="text-gray-400">選擇您想觀賞的電影</p>
         </div>
-        
+
         {filteredMovies.length === 0 ? (
           <div className="text-center text-gray-400 py-20">
             <p className="text-xl mb-2">沒有符合條件的電影</p>
@@ -297,7 +298,7 @@ export default function Home() {
             {filteredMovies.map((movie) => (
               <div
                 key={movie.id}
-                className="bg-gray-800 rounded-xl overflow-hidden shadow-xl  transition-all duration-300"
+                className="bg-[#7B7B7B]/20	rounded-xl overflow-hidden shadow-xl  transition-all duration-300"
               >
                 <div className="relative h-96 bg-gray-700 overflow-hidden group">
                   <img
@@ -319,13 +320,13 @@ export default function Home() {
                     </div>
                   </div>
                 </div>
-                
+
                 {/* 電影資訊 */}
                 <div className="p-5">
                   <h3 className="text-xl font-bold text-white mb-2 line-clamp-2">
                     {movie.title}
                   </h3>
-                  
+
                   <div className="flex gap-2 mb-3 flex-wrap">
                     {movie.genre.split('/').map((g, i) => (
                       <span key={i} className="text-xs bg-gray-700 text-gray-300 px-2 py-1 rounded-full">
@@ -333,11 +334,11 @@ export default function Home() {
                       </span>
                     ))}
                   </div>
-                  
+
                   <p className="text-gray-300 text-sm mb-4 line-clamp-3">
                     {movie.description}
                   </p>
-                  
+
                   {movie.showtime_count > 0 ? (
                     <Link
                       href={`/movie/${movie.id}`}
@@ -360,9 +361,6 @@ export default function Home() {
         )}
       </main>
 
-      <footer className="bg-gray-800 text-gray-400 text-center p-6 mt-12">
-        <p>&copy; 2025 電影訂票系統. All rights reserved.</p>
-      </footer>
     </div>
   );
 }
