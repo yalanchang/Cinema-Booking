@@ -294,11 +294,11 @@ export default function Home() {
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-8">
             {filteredMovies.map((movie) => (
               <div
                 key={movie.id}
-                className="bg-[#7B7B7B]/20	rounded-xl overflow-hidden shadow-xl  transition-all duration-300"
+                className=" overflow-hidden shadow-2xl  transition-all duration-300"
               >
                 <div className="relative h-96 bg-gray-700 overflow-hidden group">
                   <img
@@ -342,14 +342,14 @@ export default function Home() {
                   {movie.showtime_count > 0 ? (
                     <Link
                       href={`/movie/${movie.id}`}
-                      className="block w-full bg-red-600 hover:bg-red-700 text-white text-center py-3 rounded-lg font-semibold transition-all hover:shadow-lg"
+                      className="block w-full bg-primary hover:bg-red-700 text-white text-center py-3 rounded-lg font-semibold transition-all hover:shadow-lg"
                     >
-                      立即訂票 ({movie.showtime_count} 個場次)
+                      立即訂票
                     </Link>
                   ) : (
                     <button
                       disabled
-                      className="block w-full bg-gray-700 text-gray-500 text-center py-3 rounded-lg font-semibold cursor-not-allowed"
+                      className="block w-full bg-primary text-gray-500 text-center py-3 rounded-lg font-semibold cursor-not-allowed"
                     >
                       暫無場次
                     </button>

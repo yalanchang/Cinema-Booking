@@ -1,9 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import pool from '@/lib/db';
 import { RowDataPacket, ResultSetHeader } from 'mysql2';
+import { verifyToken } from '@/lib/auth';
 
-// POST - 建立新訂單
+
 export async function POST(request: NextRequest) {
+  let userId: number | null = null;
+
+  const token = request.cookies.get('auth_token')?.value;
+  if (token) {
+    const payload = verifyToken(token);
+    if (payload) {
+      userId = payload.id;
+    }
+  }
   const connection = await pool.getConnection();
   
   try {
@@ -92,11 +102,11 @@ export async function POST(request: NextRequest) {
     console.log(`💰 Total amount: ${totalAmount}`);
 
     // 5. 建立訂單
-    const [bookingResult] = await connection.query<ResultSetHeader>(
-      `INSERT INTO bookings (showtime_id, customer_name, customer_email, customer_phone, total_amount, booking_status)
-       VALUES (?, ?, ?, ?, ?, 'confirmed')`,
-      [showtimeId, customerName, customerEmail, customerPhone || null, totalAmount]
-    );
+ const [bookingResult] = await connection.query<ResultSetHeader>(
+  `INSERT INTO bookings (user_id, showtime_id, customer_name, customer_email, customer_phone, total_amount, booking_status)
+   VALUES (?, ?, ?, ?, ?, ?, 'confirmed')`,
+  [userId, showtimeId, customerName, customerEmail, customerPhone || null, totalAmount]
+);
 
     const bookingId = bookingResult.insertId;
     console.log(`✅ Booking created: ${bookingId}`);

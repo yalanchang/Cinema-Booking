@@ -62,24 +62,15 @@ export default function Carousel({ slides, autoPlayInterval = 5000 }: CarouselPr
           }`}
         >
           <Link href={slide.link}>
-            <div className="relative w-full h-full">
-              <img
+          <div className="relative w-full aspect-video"> 
+          <img
                 src={slide.image}
                 alt={slide.title}
                 className="w-full h-full object-cover"
-              />
+                />
               
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
-              
-              <div className="absolute bottom-0 left-0 right-0 p-8 md:p-12">
-                <h2 className="text-4xl md:text-3xl font-bold text-white mb-4">
-                  {slide.title}
-                </h2>
-                <p className=" text-gray-200 mb-6 max-w-2xl">
-                  {slide.description}
-                </p>
-           
-              </div>
+         
             </div>
           </Link>
         </div>

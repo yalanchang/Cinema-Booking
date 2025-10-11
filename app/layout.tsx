@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import './globals.css';
 import Footer from './components/Footer';
 import Header from './components/header';
+import { AuthProvider } from './contexts/AuthContext';
+
 
 
 
@@ -18,9 +20,12 @@ export default function RootLayout({
   return (
     <html lang="zh-TW">
       <body>
-      <Header /> 
-        {children}
-      <Footer />
+        <AuthProvider>
+          <Header />
+
+          {children}
+        </AuthProvider>
+        <Footer />
       </body>
     </html>
   );
