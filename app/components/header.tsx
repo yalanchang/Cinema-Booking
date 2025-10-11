@@ -14,7 +14,6 @@ export default function Header({
        <div>電影介紹</div>
        <div>活動公告</div>
        <div>會員專區</div>
-       <div>業務專區</div>
        
 
          </div>

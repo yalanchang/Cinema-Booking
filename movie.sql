@@ -14,6 +14,8 @@ CREATE TABLE users (
     INDEX idx_email (email)
 )
 
+SELECT * FROM showtimes WHERE movie_id = 1;
+
 -- 更新訂單表，關聯會員
 ALTER TABLE bookings ADD COLUMN user_id INT DEFAULT NULL AFTER id;
 ALTER TABLE bookings ADD FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL;
@@ -176,29 +178,61 @@ FROM (
                 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9 UNION SELECT 10) s
 ) AS seat_data_4;
 
--- 插入場次資料(接下來幾天的場次)
-INSERT INTO showtimes (movie_id, theater_id, show_date, show_time, price, available_seats) VALUES
--- 玩命關頭X (movie_id = 1)
-(1, 1, CURDATE(), '10:30:00', 280, 100),
-(1, 1, CURDATE(), '14:00:00', 300, 100),
-(1, 2, CURDATE(), '18:00:00', 350, 150),
-(1, 2, CURDATE(), '21:00:00', 350, 150),
-(1, 1, DATE_ADD(CURDATE(), INTERVAL 1 DAY), '13:00:00', 280, 100),
-(1, 2, DATE_ADD(CURDATE(), INTERVAL 1 DAY), '19:30:00', 350, 150),
-(2, 2, CURDATE(), '15:30:00', 380, 150),
-(2, 2, CURDATE(), '19:30:00', 380, 150),
-(2, 4, CURDATE(), '20:00:00', 450, 60),
-(2, 2, DATE_ADD(CURDATE(), INTERVAL 1 DAY), '16:00:00', 380, 150),
-(3, 3, CURDATE(), '11:00:00', 250, 80),
-(3, 3, CURDATE(), '16:00:00', 280, 80),
-(3, 1, CURDATE(), '20:30:00', 300, 100),
-(3, 3, DATE_ADD(CURDATE(), INTERVAL 1 DAY), '12:00:00', 250, 80),
-(4, 2, CURDATE(), '13:00:00', 380, 150),
-(4, 4, CURDATE(), '17:00:00', 450, 60),
-(4, 2, CURDATE(), '21:30:00', 380, 150),
-(4, 2, DATE_ADD(CURDATE(), INTERVAL 1 DAY), '14:30:00', 380, 150),
-(5, 3, CURDATE(), '10:00:00', 220, 80),
-(5, 1, CURDATE(), '12:30:00', 250, 100),
-(5, 3, CURDATE(), '15:00:00', 250, 80),
-(5, 1, DATE_ADD(CURDATE(), INTERVAL 1 DAY), '11:00:00', 250, 100);
+-- MySQL 動態插入未來 7 天的場次
+SET @start_date = CURDATE();
 
+-- 電影 1 的場次（未來 7 天）
+INSERT INTO showtimes (movie_id, theater_id, show_date, show_time, price, available_seats)
+SELECT 
+    1 as movie_id,
+    1 as theater_id,
+    DATE_ADD(@start_date, INTERVAL day_offset DAY) as show_date,
+    show_time,
+    280 as price,
+    50 as available_seats
+FROM (
+    SELECT 0 as day_offset UNION ALL
+    SELECT 1 UNION ALL
+    SELECT 2 UNION ALL
+    SELECT 3 UNION ALL
+    SELECT 4 UNION ALL
+    SELECT 5 UNION ALL
+    SELECT 6
+) days
+CROSS JOIN (
+    SELECT '10:30:00' as show_time UNION ALL
+    SELECT '13:00:00' UNION ALL
+    SELECT '15:30:00' UNION ALL
+    SELECT '18:00:00' UNION ALL
+    SELECT '20:30:00'
+) times;
+
+-- 電影 2 的場次
+INSERT INTO showtimes (movie_id, theater_id, show_date, show_time, price, available_seats)
+SELECT 
+    2 as movie_id,
+    1 as theater_id,
+    DATE_ADD(@start_date, INTERVAL day_offset DAY) as show_date,
+    show_time,
+    280 as price,
+    50 as available_seats
+FROM (
+    SELECT 0 as day_offset UNION ALL
+    SELECT 1 UNION ALL
+    SELECT 2 UNION ALL
+    SELECT 3 UNION ALL
+    SELECT 4 UNION ALL
+    SELECT 5 UNION ALL
+    SELECT 6
+) days
+CROSS JOIN (
+    SELECT '12:00:00' as show_time UNION ALL
+    SELECT '16:00:00' UNION ALL
+    SELECT '19:30:00'
+) times;
+
+ALTER TABLE movies ADD COLUMN trailer_url VARCHAR(500) AFTER poster_url;
+
+UPDATE movies 
+SET trailer_url = 'https://www.youtube.com/watch?v=32RAq6JzY-w' 
+WHERE id = 1;
