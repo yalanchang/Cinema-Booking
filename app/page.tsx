@@ -293,7 +293,7 @@ export default function Home() {
                 setSelectedDate('');
                 setSelectedTimeSlot('all');
               }}
-              className="mt-6 bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
+              className="mt-6 bg-primary text-white px-6 py-3 rounded-lg font-semibold transition-colors"
             >
               顯示全部電影
             </button>
@@ -305,7 +305,7 @@ export default function Home() {
               <Link
                 href={`/movies/${movie.id}`}
                 key={movie.id}
-                className="block overflow-hidden shadow-2xl transition-all duration-300 hover:shadow-[#D26900]/50 cursor-pointer"
+                className="block overflow-hidden shadow-2xl transition-all duration-300 hover:shadow-primary/10 cursor-pointer"
               >
                 <div className="relative h-96 bg-gray-700 overflow-hidden group">
                   <img
@@ -318,9 +318,7 @@ export default function Home() {
                   />
                   <div className="absolute top-4 right-4 bg-red-600 text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg z-10">
                     {movie.rating}
-                  </div>
-                  
-                                </div>
+                  </div></div>
           
                 {/* 電影資訊 */}
                 <div className="p-4 bg-gray-950 ">

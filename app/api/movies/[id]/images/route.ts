@@ -6,10 +6,6 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const movieId = params.id;
-    if (!movieId) {
-        return NextResponse.json({ success: false, error: '缺少電影 ID' }, { status: 400 });
-      }
     const connection = await mysql.createConnection({
       host: process.env.DB_HOST,
       user: process.env.DB_USER,
@@ -18,24 +14,15 @@ export async function GET(
     });
 
     const [rows] = await connection.execute(
-      'SELECT * FROM movies WHERE id = ?',
+      'SELECT * FROM movie_images WHERE movie_id = ? ORDER BY display_order',
       [params.id]
     );
 
     await connection.end();
 
-    const movies = rows as any[];
-    
-    if (movies.length === 0) {
-      return NextResponse.json(
-        { success: false, error: '找不到此電影' },
-        { status: 404 }
-      );
-    }
-
     return NextResponse.json({
       success: true,
-      data: movies[0]
+      data: rows
     });
 
   } catch (error) {

@@ -1,25 +1,12 @@
 'use client';
-
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import RecommendedMovies from '@/app/components/RecommendedMovies';
-
-
-interface Showtime {
-  id: number;
-  movie_id: number;
-  theater_id: number;
-  show_date: string;
-  show_time: string;
-  price: number;
-  available_seats: number;
-  theater_name: string;
-  movie_title: string;
-  duration: number;
-  genre: string;
-  rating: string;
-}
+import MovieGallery from '@/app/components/MovieGallery';
+import Animations from '@/app/components/Animations';
+import DateSelector from '@/app/components/DateSelector';
+import ShowtimeList,{ Showtime } from '@/app/components/ShowtimeList';
 
 interface Movie {
   id: number;
@@ -36,13 +23,41 @@ interface Movie {
 export default function MoviePage() {
   const params = useParams();
   const router = useRouter();
-  const movieId = params.id as string; 
+  const movieId = params.id as string;
   const [movie, setMovie] = useState<Movie | null>(null);
   const [showtimes, setShowtimes] = useState<Showtime[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<string>('');
   const [isTrailerOpen, setIsTrailerOpen] = useState(false);
+  const [carouselSlides, setCarouselSlides] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (movieId) {
+      fetchMovieAndShowtimes();
+      fetchCarouselSlides();
+    }
+  }, [movieId]);
+
+  const fetchCarouselSlides = async () => {
+
+    try {
+      const response = await fetch(`/api/movies/${movieId}/images`);
+      const data = await response.json();
+      const slides = data.data.map((item: any) => ({
+        id: item.id,
+        image: item.image_url,
+        title: item.image_type,
+        link: `/movies/${movieId}/images/${item.id}`,
+
+      }));
+
+      setCarouselSlides(slides);
+    } catch (err) {
+      console.error('Error fetching carousel slides:', err);
+    }
+  };
+
 
   useEffect(() => {
     if (movieId) {
@@ -228,8 +243,6 @@ export default function MoviePage() {
                 </div>
               )}
             </div>
-
-
             <div className="text-white  px-8 py-12 bg-gradient-to-t from-transparent via-black/50 to-black ">
               {movie && (
                 <>
@@ -243,7 +256,6 @@ export default function MoviePage() {
                       </span>
                     ))}
                   </div>
-
                   <div className="space-y-3 mb-6 text-gray-300">
                     <div className="flex items-center gap-3">
                       <span className="text-gray-500 w-24">片長</span>
@@ -254,7 +266,6 @@ export default function MoviePage() {
                       <span>{movie.release_date}</span>
                     </div>
                   </div>
-
                   {/* 觀看預告片按鈕（手機版） */}
                   {videoId && (
                     <button
@@ -266,7 +277,6 @@ export default function MoviePage() {
                       </svg>
                     </button>
                   )}
-
                   {movie.description && (
                     <div className="mb-6">
                       <h3 className="text-xl font-bold mb-3">劇情簡介</h3>
@@ -284,7 +294,7 @@ export default function MoviePage() {
 
       {/* 場次選擇區 */}
       <main className="w-full px-8 py-12 bg-gradient-to-b from-neutral-900/30 via-black to-black">
-      {error ? (
+        {error ? (
           <div className="text-center text-gray-400 py-20 ">
             <div className="text-red-500 text-xl mb-4">❌ {error}</div>
             <button
@@ -308,29 +318,13 @@ export default function MoviePage() {
         ) : (
           <>
             {/* 日期選擇器 */}
-            <div className="mb-8 ">
-              <h2 className="text-2xl font-bold text-white mb-4">選擇日期</h2>
-              <div className="flex gap-3 overflow-x-auto pb-4 ">
-                {availableDates.map((date) => (
-                  <button
-                    key={date}
-                    onClick={() => setSelectedDate(date)}
-                    className={`px-6 py-3 font-medium whitespace-nowrap transition-all cursor-pointer ${selectedDate === date
-                      ? 'bg-primary text-white '
-                      : 'bg-neutral-800 text-gray-300 hover:bg-neutral-900/10'
-                      }`}
-                  >
-                    {formatDate(date)}
-                    {isToday(date) && (
-                      <span className="ml-2 text-xs bg-white/20 px-2 py-0.5 rounded-full">
-                        今天
-                      </span>
-                    )}
-                  </button>
-                ))}
-              </div>
-            </div>
-
+            <DateSelector
+              availableDates={availableDates}
+              selectedDate={selectedDate}
+              setSelectedDate={setSelectedDate}
+              formatDate={formatDate}
+              isToday={isToday}
+            />
             {/* 場次列表 */}
             {selectedDate && (
               <div>
@@ -341,65 +335,11 @@ export default function MoviePage() {
                 ) : (
                   <div className="space-y-8">
                     {/* 影廳 */}
-                    {Object.entries(
-                      filteredShowtimes.reduce((acc, showtime) => {
-                        const theater = showtime.theater_name;
-                        if (!acc[theater]) {
-                          acc[theater] = [];
-                        }
-                        acc[theater].push(showtime);
-                        return acc;
-                      }, {} as { [key: string]: typeof filteredShowtimes })
-                    ).map(([theaterName, showtimes]) => (
-                      <div key={theaterName}>
-                        {/* 影廳標題 */}
-                        <div className="flex items-center gap-3 mb-4">
-                          <div className="bg-primary w-1 h-6 "></div>
-                          <h3 className="text-xl  text-white">{theaterName}</h3>
-                          <div className="flex-1 h-px bg-neutral-800"></div>
-                        </div>
-
-                        {/* 場次卡片 */}
-                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-                          {showtimes.map((showtime) => (
-                            <button
-                              key={showtime.id}
-                              onClick={() => router.push(`/booking/${showtime.id}`)}
-                              disabled={showtime.available_seats === 0}
-                              className={`p-5  border-2 transition-all duration-200 ${showtime.available_seats === 0
-                                  ? 'bg-neutral-900 border-neutral-800 text-gray-800 cursor-not-allowed opacity-50 '
-                                  : 'bg-neutral-900 border-neutral-800   hover:bg-neutral-900/10 text-white cursor-pointer border-2'
-                                }`}
-                            >
-                              {/* 時間 */}
-                              <div className="text-3xl font-bold mb-3 text-center">
-                                {formatTime(showtime.show_time)}
-                              </div>
-
-                              {/* 價格 */}
-                              <div className="text-[#D26900] font-bold text-xl mb-3 text-center border-t border-neutral-800 pt-3">
-                                ${showtime.price}
-                              </div>
-
-                              {/* 座位資訊 */}
-                              <div className={`text-xs text-center py-1.5 rounded-full ${showtime.available_seats === 0
-                                  ? 'bg-gray-800 text-gray-600'
-                                  : showtime.available_seats < 10
-                                    ? 'text-orange-400'
-                                    : 'text-gray-600'
-                                }`}>
-                                {showtime.available_seats === 0
-                                  ? '已售完'
-                                  : showtime.available_seats < 10
-                                    ? `僅剩 ${showtime.available_seats} 席`
-                                    : `剩餘 ${showtime.available_seats} 席`
-                                }
-                              </div>
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    ))}
+                    <ShowtimeList
+                      filteredShowtimes={filteredShowtimes}
+                      formatTime={formatTime}
+                      router={router}
+                    />
                   </div>
                 )}
               </div>
@@ -407,11 +347,15 @@ export default function MoviePage() {
           </>
         )}
       </main>
-            <RecommendedMovies currentMovieId={movieId} />
-
+      {carouselSlides.length > 0 ? (
+        <MovieGallery slides={carouselSlides} autoPlayInterval={5000} />
+      ) : (
+        <p>載入中...</p>
+      )}
+      <RecommendedMovies currentMovieId={movieId} />
       {isTrailerOpen && videoId && (
         <div
-          className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-80 animate-fadeIn"
+          className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-100 animate-fadeIn "
           onClick={() => setIsTrailerOpen(false)}
         >
           <div
@@ -445,36 +389,7 @@ export default function MoviePage() {
           </div>
         </div>
       )}
-
-      <style jsx>{`
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-          }
-          to {
-            opacity: 1;
-          }
-        }
-
-        @keyframes scaleIn {
-          from {
-            opacity: 0;
-            transform: scale(0.9);
-          }
-          to {
-            opacity: 1;
-            transform: scale(1);
-          }
-        }
-
-        .animate-fadeIn {
-          animation: fadeIn 0.3s ease-out;
-        }
-
-        .animate-scaleIn {
-          animation: scaleIn 0.3s ease-out;
-        }
-      `}</style>
+      <Animations />
     </div>
   );
 }

@@ -234,10 +234,28 @@ CROSS JOIN (
 ALTER TABLE movies ADD COLUMN trailer_url VARCHAR(500) AFTER poster_url;
 
 UPDATE movies 
-SET trailer_url = 'https://www.youtube.com/watch?v=32RAq6JzY-w' 
-WHERE id = 1;
+SET trailer_url = 'https://www.youtube.com/watch?v=uYPbbksJxIg' 
+WHERE id = 2;
 
 UPDATE movies 
 SET poster_url = 'https://i.pinimg.com/736x/d5/9f/d5/d59fd5096759bf1bd158f046e3b7d421.jpg' 
 WHERE id = 2;
+
+-- 建立電影照片表
+CREATE TABLE movie_images (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  movie_id INT NOT NULL,
+  image_url VARCHAR(500) NOT NULL,
+  image_type ENUM('poster', 'backdrop', 'still') DEFAULT 'still',
+  display_order INT DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (movie_id) REFERENCES movies(id) ON DELETE CASCADE
+);
+
+INSERT INTO movie_images (movie_id, image_url, image_type, display_order) VALUES
+(2, 'https://i.pinimg.com/736x/4e/e7/62/4ee76253bdd6a700a7a25050b1dfc0f0.jpg', 'poster', 1),
+(2, 'https://i.pinimg.com/1200x/c3/f2/61/c3f2618368142252027375e051975ab0.jpg', 'backdrop', 2),
+(2, 'https://i.pinimg.com/1200x/99/04/2c/99042ce27a0271e0fad71a641f0a7f94.jpg', 'still', 3),
+(2, 'https://i.pinimg.com/736x/e5/14/34/e51434b556c154fc5634f45250825f2e.jpg', 'still', 4),
+(2, 'https://i.pinimg.com/1200x/98/4a/f0/984af09083f0dfa91807a8270836a70e.jpg', 'still', 5);
 
