@@ -305,7 +305,6 @@ export default function Home() {
               <Link
                 href={`/movies/${movie.id}`}
                 key={movie.id}
-                
                 className="block overflow-hidden shadow-2xl transition-all duration-300 hover:shadow-[#D26900]/50 cursor-pointer"
               >
                 <div className="relative h-96 bg-gray-700 overflow-hidden group">

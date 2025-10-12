@@ -6,10 +6,10 @@ import UserMenu from './UserMenu';
 export default function Header({ 
 }) {
   return (
-    <header className="bg-neutral-900 text-white p-6 shadow-2xl ">
+    <header className="bg-neutral-900 text-white  shadow-2xl border-b border-gray-800">
       <div className="container mx-auto gap-4 flex flex-row items-center  justify-between">
       <div className="container mx-auto gap-8 flex flex-row items-center">
-        <img src="./logo.png" className="w-20 h-20" ></img>
+        <img src="/logo.png" className="w-20 h-20"  alt="Logo" ></img>
        <div>影城介紹</div>
        <div>電影介紹</div>
        <div>活動公告</div>

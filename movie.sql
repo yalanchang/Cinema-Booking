@@ -236,3 +236,8 @@ ALTER TABLE movies ADD COLUMN trailer_url VARCHAR(500) AFTER poster_url;
 UPDATE movies 
 SET trailer_url = 'https://www.youtube.com/watch?v=32RAq6JzY-w' 
 WHERE id = 1;
+
+UPDATE movies 
+SET poster_url = 'https://i.pinimg.com/736x/d5/9f/d5/d59fd5096759bf1bd158f046e3b7d421.jpg' 
+WHERE id = 2;
+
