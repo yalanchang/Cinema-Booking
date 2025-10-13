@@ -48,7 +48,9 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-neutral-900 flex items-center justify-center p-6">
+    <div className="min-h-screen bg-neutral-900 flex items-center justify-center">
+     <img src="/register.jpg" className="w-full h-full mx-auto " />
+
       <div className="max-w-md w-full">
         <div className="text-center mb-4">
           <p className="text-gray-400 mt-2">
@@ -57,12 +59,12 @@ export default function LoginPage() {
         </div>
 
         {/* 表單 */}
-        <div className="bg-gray-800 rounded-xl p-8 shadow-2xl">
+        <div className=" p-8 ">
           {/* 切換登入/註冊 */}
           <div className="flex gap-4 mb-6">
             <button
               onClick={() => setIsLogin(true)}
-              className={`flex-1 py-2 rounded-lg font-semibold transition-all ${
+              className={`flex-1 py-2 rounded-xs font-semibold transition-all ${
                 isLogin
                   ? 'bg-[#D26900] text-white'
                   : 'bg-gray-700 text-gray-400 hover:text-white'
@@ -72,7 +74,7 @@ export default function LoginPage() {
             </button>
             <button
               onClick={() => setIsLogin(false)}
-              className={`flex-1 py-2 rounded-lg font-semibold transition-all ${
+              className={`flex-1 py-2 rounded-xs font-semibold transition-all ${
                 !isLogin
                   ? 'bg-[#D26900] text-white'
                   : 'bg-gray-700 text-gray-400 hover:text-white'
@@ -83,7 +85,7 @@ export default function LoginPage() {
           </div>
 
           {error && (
-            <div className="mb-4 p-3 bg-red-900/50 border border-red-700 rounded-lg text-red-300 text-sm">
+            <div className="mb-4 p-3 bg-red-900/50 border border-red-700 rounded-xs text-red-300 text-sm">
               {error}
             </div>
           )}
@@ -98,7 +100,7 @@ export default function LoginPage() {
                   type="text"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full px-4 py-3 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D26900]"
+                  className="w-full px-4 py-3 bg-gray-700 text-white rounded-xs focus:outline-none focus:ring-2 focus:ring-[#D26900]"
                   placeholder="請輸入姓名"
                 />
               </div>
@@ -112,7 +114,7 @@ export default function LoginPage() {
                 type="email"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className="w-full px-4 py-3 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D26900]"
+                className="w-full px-4 py-3 bg-gray-700 text-white rounded-xs focus:outline-none focus:ring-2 focus:ring-[#D26900]"
                 placeholder="example@email.com"
               />
             </div>
@@ -125,7 +127,7 @@ export default function LoginPage() {
                 type="password"
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                className="w-full px-4 py-3 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D26900]"
+                className="w-full px-4 py-3 bg-gray-700 text-white rounded-xs focus:outline-none focus:ring-2 focus:ring-[#D26900]"
                 placeholder="至少 6 個字元"
               />
             </div>
@@ -139,7 +141,7 @@ export default function LoginPage() {
                   type="tel"
                   value={formData.phone}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  className="w-full px-4 py-3 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D26900]"
+                  className="w-full px-4 py-3 bg-gray-700 text-white rounded-xs focus:outline-none focus:ring-2 focus:ring-[#D26900]"
                   placeholder="0912-345-678"
                 />
               </div>
@@ -148,7 +150,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-[#D26900] hover:bg-[#B85700] disabled:bg-gray-600 text-white py-3 rounded-lg font-bold text-lg transition-all disabled:cursor-not-allowed"
+              className="w-full bg-[#D26900] hover:bg-[#B85700] disabled:bg-gray-600 text-white py-3 rounded-xs font-bold text-lg transition-all disabled:cursor-not-allowed"
             >
               {loading ? '處理中...' : isLogin ? '登入' : '註冊'}
             </button>

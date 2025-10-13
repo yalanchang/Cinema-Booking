@@ -57,7 +57,7 @@ export default function MovieCarousel({ slides, autoPlayInterval = 5000 }: Carou
 
     return (
         <div
-            className="relative w-full h-[400px] bg-black overflow-hidden py-16 mb-8"
+            className="relative w-full h-[400px]  overflow-hidden py-16 bg-black"
             onMouseEnter={() => setIsAutoPlay(false)}
             onMouseLeave={() => setIsAutoPlay(true)}
         >
@@ -100,24 +100,24 @@ export default function MovieCarousel({ slides, autoPlayInterval = 5000 }: Carou
             {/* 左右切換按鈕 */}
             <button
                 onClick={prevSlide}
-                className="absolute left-4 top-1/2 -translate-y-1/2 z-20 bg-black/50 hover:bg-black/70 text-white p-4 rounded-full transition-all backdrop-blur-sm"
+                className="absolute left-4 top-1/2  z-20 transform -translate-y-1/2 text-white   transition-all hover:text-primary cursor-pointer "
             >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M15 19l-7-7 7-7" />
                 </svg>
             </button>
 
             <button
                 onClick={nextSlide}
-                className="absolute right-4 top-1/2 -translate-y-1/2 z-20 bg-black/50 hover:bg-black/70 text-white p-4 rounded-full transition-all backdrop-blur-sm"
+                className="absolute right-4 top-1/2  z-20 transform -translate-y-1/2 text-white transition-all hover:text-primary cursor-pointer"
             >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 5l7 7-7 7" />
                 </svg>
             </button>
 
             {/* 指示點 */}
-            <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex gap-3 z-20">
+            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2  flex gap-3 z-20 ">
                 {slides.map((_, index) => (
                     <button
                         key={index}

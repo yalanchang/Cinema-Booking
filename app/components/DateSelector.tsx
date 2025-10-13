@@ -23,7 +23,7 @@ interface DateSelectorProps {
               onClick={() => setSelectedDate(date)}
               className={`px-6 py-3 font-medium whitespace-nowrap transition-all cursor-pointer ${selectedDate === date
                 ? 'bg-primary text-white'
-                : 'bg-neutral-800 text-gray-300 hover:bg-neutral-900/10'
+                : 'bg-neutral-800 text-gray-300 hover:bg-neutral-900'
                 }`}
             >
               {formatDate(date)}

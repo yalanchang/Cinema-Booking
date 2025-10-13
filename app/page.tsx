@@ -180,7 +180,6 @@ export default function Home() {
       <div className="min-h-screen flex items-center justify-center bg-neutral-900">
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-red-600 mb-4"></div>
-          <div className="text-white text-xl">載入中...</div>
         </div>
       </div>
     );
@@ -218,7 +217,7 @@ export default function Home() {
             
             {/* 日期 */}
             <div className="w-full md:w-[320px] relative group">
-            <span className="text-sm">請選擇日期</span>
+            <span className="text-sm text-white">請選擇日期</span>
 
               <select
                 value={selectedDate}
@@ -238,7 +237,7 @@ export default function Home() {
 
             {/* 時段 */}
             <div className="w-full md:w-[320px] relative group">
-              <span className="text-sm">請選擇時段</span>
+              <span className="text-sm text-white">請選擇時段</span>
               <select
                 value={selectedTimeSlot}
                 onChange={(e) => setSelectedTimeSlot(e.target.value)}

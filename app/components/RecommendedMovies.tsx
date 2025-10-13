@@ -72,12 +72,11 @@ export default function RecommendedMovies({ currentMovieId }: RecommendedMoviesP
     }
 
     return (
-        <section className="w-full bg-neutral-900 py-16 border-t border-neutral-800">
-            <div className="container mx-auto px-8">
+        <section className="w-full bg-black py-16">
+            <div className="container mx-auto ">
                 {/* 標題 */}
-                <div className="flex items-center gap-4 mb-8">
-                    <div className="bg-primary w-1 h-8 rounded-full"></div>
-                    <h2 className="text-3xl font-bold text-white">推薦電影</h2>
+                <div className="flex items-center justify-center gap-4 mb-8 py-8 pt-16">
+                    <h2 className="text-3xl text-white ">推薦電影</h2>
                 </div>
 
                 {/* 電影卡片網格 */}

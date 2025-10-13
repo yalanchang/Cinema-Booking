@@ -26,7 +26,6 @@ export default function BookingPage() {
   const params = useParams();
   const router = useRouter();
   const showtimeId = params.showtimeId;
-
   const [seats, setSeats] = useState<Seat[]>([]);
   const [bookedSeatIds, setBookedSeatIds] = useState<number[]>([]);
   const [selectedSeatIds, setSelectedSeatIds] = useState<number[]>([]);
@@ -225,7 +224,7 @@ export default function BookingPage() {
 
               <div className="mb-8">
                 <div className="bg-gradient-to-b from-gray-700 to-gray-800 text-white text-center py-4 rounded-lg mb-4 shadow-lg">
-                  <div className="text-xl font-bold">🎬 銀幕</div>
+                  <div className="text-xl font-bold">銀幕</div>
                 </div>
               </div>
 

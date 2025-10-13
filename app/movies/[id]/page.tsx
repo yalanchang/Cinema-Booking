@@ -193,7 +193,7 @@ export default function MoviePage() {
       <div className="min-h-screen flex items-center justify-center bg-neutral-950">
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-[#D26900] mb-4"></div>
-          <div className="text-white text-xl">載入中...</div>
+
         </div>
       </div>
     );
