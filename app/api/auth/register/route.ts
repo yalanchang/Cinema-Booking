@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       return NextResponse.json(
-        { success: false, error: '請輸入有效的 Email' },
+        { success: false, error: '請輸入有效的Email' },
         { status: 400 }
       );
     }
@@ -32,7 +32,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 檢查 Email 是否已存在
     const [existingUsers] = await pool.query(
       'SELECT id FROM users WHERE email = ?',
       [email]
@@ -77,7 +76,7 @@ export async function POST(request: NextRequest) {
   } catch (error: any) {
     console.error('註冊錯誤:', error);
     return NextResponse.json(
-      { success: false, error: '註冊失敗，請稍後再試' },
+      { success: false, error: '註冊失敗，請聯繫客服' },
       { status: 500 }
     );
   }

@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
 
     // 查詢使用者
     const [users] = await pool.query<RowDataPacket[]>(
-      'SELECT id, name, email, password FROM users WHERE email = ?',
+      'SELECT id, name, email, password ,phone FROM users WHERE email = ?',
       [email]
     );
 
@@ -44,7 +44,9 @@ export async function POST(request: NextRequest) {
     const token = generateToken({
       id: user.id,
       email: user.email,
-      name: user.name
+      name: user.name,
+      phone: user.phone || null
+
     });
 
     // 設定 Cookie
@@ -53,7 +55,10 @@ export async function POST(request: NextRequest) {
       data: {
         id: user.id,
         name: user.name,
-        email: user.email
+        email: user.email,
+        phone: user.phone || null 
+
+
       }
     });
 

@@ -5,20 +5,30 @@ import { verifyToken } from '@/lib/auth';
 
 
 export async function POST(request: NextRequest) {
-  let userId: number | null = null;
 
   const token = request.cookies.get('auth_token')?.value;
-  if (token) {
-    const payload = verifyToken(token);
-    if (payload) {
-      userId = payload.id;
-    }
+  
+  if (!token) {
+    return NextResponse.json(
+      { success: false, error: '請先登入會員' },
+      { status: 401 }
+    );
   }
+
+  const payload = verifyToken(token);
+  
+  if (!payload) {
+    return NextResponse.json(
+      { success: false, error: '登入狀態已過期，請重新登入' },
+      { status: 401 }
+    );
+  }
+
   const connection = await pool.getConnection();
   
   try {
     const body = await request.json();
-    const { showtimeId, seatIds, customerName, customerEmail, customerPhone } = body;
+    const { showtimeId, seatIds } = body; // seatIds 是一個陣列
 
     // 驗證必要欄位
     if (!showtimeId || !seatIds || !Array.isArray(seatIds) || seatIds.length === 0) {
@@ -28,16 +38,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!customerName || !customerEmail) {
-      return NextResponse.json(
-        { success: false, error: '請填寫姓名和電子郵件' },
-        { status: 400 }
-      );
-    }
 
     // 開始交易
     await connection.beginTransaction();
-    console.log('🔄 Transaction started for booking');
 
     // 1. 鎖定場次記錄並檢查
     const [showtimes] = await connection.query<RowDataPacket[]>(
@@ -54,7 +57,7 @@ export async function POST(request: NextRequest) {
     }
 
     const showtime = showtimes[0];
-    console.log(`📅 Showtime: ${showtime.id}, Available seats: ${showtime.available_seats}`);
+    console.log(`Showtime: ${showtime.id}, Available seats: ${showtime.available_seats}`);
     
     // 檢查座位數量
     if (showtime.available_seats < seatIds.length) {
@@ -99,13 +102,20 @@ export async function POST(request: NextRequest) {
 
     // 4. 計算總金額
     const totalAmount = parseFloat(showtime.price) * seatIds.length;
-    console.log(`💰 Total amount: ${totalAmount}`);
+    console.log(`總金額: ${totalAmount}`);
 
     // 5. 建立訂單
  const [bookingResult] = await connection.query<ResultSetHeader>(
   `INSERT INTO bookings (user_id, showtime_id, customer_name, customer_email, customer_phone, total_amount, booking_status)
    VALUES (?, ?, ?, ?, ?, ?, 'confirmed')`,
-  [userId, showtimeId, customerName, customerEmail, customerPhone || null, totalAmount]
+   [
+    payload.id,          
+    showtimeId, 
+    payload.name,         
+    payload.email,       
+    payload.phone,
+    totalAmount
+  ]
 );
 
     const bookingId = bookingResult.insertId;

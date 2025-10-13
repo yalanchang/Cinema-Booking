@@ -3,13 +3,14 @@ import { verifyToken } from '@/lib/auth';
 import pool from '@/lib/db';
 import { RowDataPacket } from 'mysql2';
 
+
 export async function GET(request: NextRequest) {
   try {
     const token = request.cookies.get('auth_token')?.value;
 
     if (!token) {
       return NextResponse.json(
-        { success: false, error: '未登入' },
+        { success: false, error: '請先登入會員' },
         { status: 401 }
       );
     }

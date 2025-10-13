@@ -1,8 +1,15 @@
 @import "tailwindcss";
 
 :root {
+
   --background: #ffffff;
   --primary: #D26900;
+  --bg-neutral-900: #171717;
+  --bg-neutral-800: #1f1f1f;
+  --bg-neutral-700: #2c2c2c;
+  --bg-neutral-600: #3a3a3a;
+
+
 
 }
 
@@ -11,6 +18,11 @@
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   --color-primary: var(--primary);
+  --color-n9: var(--bg-neutral-900);
+  --color-n8: var(--bg-neutral-800);
+  --color-n7: var(--bg-neutral-700);
+  --color-n6: var(--bg-neutral-600);
+
 
 }
 
@@ -25,4 +37,34 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+@layer utilities {
+  @keyframes ken-burns {
+    0% { 
+      transform: scale(1); 
+    }
+    100% { 
+      transform: scale(1.1); 
+    }
+  }
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-ken-burns {
+    animation: ken-burns 20s ease-in-out infinite alternate;
+  }
+
+  .animate-fade-in {
+    animation: fade-in 0.6s ease-out;
+  }
 }
