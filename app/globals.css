@@ -4,6 +4,7 @@
 
   --background: #ffffff;
   --primary: #D26900;
+  --secondary: #b75d04;
   --bg-neutral-900: #171717;
   --bg-neutral-800: #1f1f1f;
   --bg-neutral-700: #2c2c2c;
@@ -22,6 +23,7 @@
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   --color-primary: var(--primary);
+  --color-secondary: var(--secondary);
   --color-n9: var(--bg-neutral-900);
   --color-n8: var(--bg-neutral-800);
   --color-n7: var(--bg-neutral-700);

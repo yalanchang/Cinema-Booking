@@ -5,8 +5,6 @@ import Link from 'next/link';
 import Carousel from './components/Carousel';
 import LoadingSpinner from './components/LoadingSpinner';
 
-
-
 interface Movie {
   id: number;
   title: string;
@@ -48,8 +46,29 @@ export default function Home() {
 
   useEffect(() => {
     fetchMoviesAndShowtimes();
+    fetchCarouselSlides();
+
   }, []);
 
+  const fetchCarouselSlides = async () => {
+    try {
+      const response = await fetch('/api/carousel');
+      const result = await response.json();
+
+      if (result.success) {
+        const slides = result.data.map((slide: any) => ({
+          id: slide.id,
+          image: slide.image_url,
+          title: slide.title,
+          description: slide.description,
+          link: slide.link_url || '#'
+        }));
+        setCarouselSlides(slides);
+      }
+    } catch (err) {
+      console.error('Error fetching carousel slides:', err);
+    }
+  };
   const fetchMoviesAndShowtimes = async () => {
     try {
       setLoading(true);
@@ -64,15 +83,7 @@ export default function Home() {
       }
 
       setMovies(moviesResult.data);
-      const slides = moviesResult.data.slice(0, 4).map((movie: Movie) => ({
-        id: movie.id,
-        image: movie.poster_url,
-        title: movie.title,
-        description: movie.description,
-        link: `/movie/${movie.id}`
-      }));
 
-      setCarouselSlides(slides);
 
       // 取得所有場次（用於篩選）
       const showtimesPromises = moviesResult.data.map((movie: Movie) =>
@@ -202,19 +213,19 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-neutral-900 ">
       {carouselSlides.length > 0 && (
-        <div className="w-full">
+        <div className="w-full h-full">
           <Carousel slides={carouselSlides} autoPlayInterval={5000} />
         </div>
       )}
 
       {/* 篩選區域 */}
-      <div className="bg-neutral-900">
+      <div className="bg-n9">
         <div className="container mx-auto p-6">
           {/* 篩選控制 */}
-          <div className="flex  md:flex-coloum gap-6 md:justify-start md:items-center">
+          <div className="flex w-full justify-start md:flex-row gap-20 md:items-center" >
 
             {/* 日期 */}
-            <div className="w-full md:w-[320px] relative group">
+            <div className="w-full md:w-[360px] relative group">
               <span className="text-sm text-white">請選擇日期</span>
               <select
                 value={selectedDate}
@@ -233,7 +244,7 @@ export default function Home() {
             </div>
 
             {/* 時段 */}
-            <div className="w-full md:w-[320px] relative group">
+            <div className="w-full md:w-[360px] relative group">
               <span className="text-sm text-white">請選擇時段</span>
               <select
                 value={selectedTimeSlot}
@@ -250,34 +261,36 @@ export default function Home() {
               <span className="absolute bottom-0 left-1/2 h-0.5 w-0 bg-primary transition-all duration-300 ease-out group-hover:w-full group-hover:left-0 peer-focus:w-full peer-focus:left-0 rounded-full"></span>
 
             </div>
-
-            {/* 清除按鈕 */}
-            {(selectedDate || selectedTimeSlot !== 'all') && (
-              <button
-                onClick={() => {
-                  setSelectedDate('');
-                  setSelectedTimeSlot('all');
-                }}
-                className="w-full md:w-auto px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold transition-all whitespace-nowrap"
-              >
-                ✖ 清除篩選
-              </button>
-            )}
+            <div className="flex items-center gap-8 ml-auto ">
+              {/* 清除按鈕 */}
+              {(selectedDate || selectedTimeSlot !== 'all') && (
+                <button
+                  onClick={() => {
+                    setSelectedDate('');
+                    setSelectedTimeSlot('all');
+                  }}
+                  className="w-full  md:w-auto px-4 py-2 bg-primary hover:bg-secondary text-white rounded-xs  transition-all font-medium whitespace-nowrap "
+                >
+                  清除篩選
+                </button>
+              )}
+              {/* 結果提示 */}
+              {(selectedDate || selectedTimeSlot !== 'all') && (
+                <div className="">
+                  <p className="text-gray-300 text-sm md:text-right">
+                    共 <span className="text-primary font-bold">{filteredMovies.length}</span> 部電影
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
 
-          {/* 結果提示 */}
-          {(selectedDate || selectedTimeSlot !== 'all') && (
-            <div className="mt-4 p-3  ">
-              <p className="text-gray-300 text-sm md:text-right">
-                找到 <span className="text-red-400 font-bold">{filteredMovies.length}</span> 部符合條件的電影
-              </p>
-            </div>
-          )}
+
         </div>
       </div>
       <main className="container mx-auto p-6">
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold text-white mb-2">熱映中</h2>
+        <div className="mb-8 border-b border-n7 pb-4 ">
+          <h2 className="text-3xl font-bold text-white ">現正熱映</h2>
 
         </div>
 
@@ -297,38 +310,110 @@ export default function Home() {
           </div>
         ) : (
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 ">
             {filteredMovies.map((movie) => (
               <Link
                 href={`/movies/${movie.id}`}
                 key={movie.id}
-                className="block overflow-hidden shadow-2xl transition-all duration-300 hover:shadow-primary/10 cursor-pointer"
+                className="group block cursor-pointer"
               >
-                <div className="relative h-96 bg-gray-700 overflow-hidden group">
-                  <img
-                    src={movie.poster_url}
-                    alt={movie.title}
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      e.currentTarget.src = 'https://via.placeholder.com/300x450/1f2937/ffffff?text=' + encodeURIComponent(movie.title);
-                    }}
-                  />
-                  <div className="absolute top-4 right-4 bg-red-600 text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg z-10">
-                    {movie.rating}
-                  </div></div>
+                <div className="relative overflow-hidden
+               border border-gray-800
+               transition-all duration-500
+               hover:border-[#D26900]
+               group-hover:scale-105
+               hover:shadow-[0_0_30px_rgba(210,105,0,0.1)]">
 
-                {/* 電影資訊 */}
-                <div className="p-4 bg-n7">
-                  <h3 className="text-xl font-bold text-white mb-2 line-clamp-2 group-hover:text-[#D26900] transition-colors">
-                    {movie.title}
-                  </h3>
+                  {/* 海報 */}
+                  <div className="relative h-96 bg-black overflow-hidden">
+                    <img
+                      src={movie.poster_url}
+                      alt={movie.title}
+                      className="w-full h-full object-cover
+                     transition-all duration-700
+                     group-hover:brightness-110"
+                    />
 
-                  <div className="flex gap-2 mb-24 flex-wrap">
-                    {movie.genre.split('/').map((g, i) => (
-                      <span key={i} className="mt-2 text-xs bg-n5 text-n2 px-2 py-1 rounded-full">
-                        {g.trim()}
-                      </span>
-                    ))}
+                    {/* 評級標籤 */}
+                    <div className="absolute top-4 right-4
+                   bg-black/40 backdrop-blur-md
+                   text-white px-3 py-1.5 text-xs font-medium
+                   border border-white/10
+                   transition-all duration-300
+                   group-hover:border-[#D26900]
+                   group-hover:bg-[#D26900]/90">
+                      {movie.rating}
+                    </div>
+
+                    {/* 底部漸變 + 訂票按鈕 */}
+                    <div className="absolute bottom-0 left-0 right-0
+                   bg-gradient-to-t from-black via-black/80 to-transparent
+                   p-6
+                   opacity-0 group-hover:opacity-100
+                   transition-opacity duration-500">
+
+                      {/* 電影時長 */}
+                      <div className="flex items-center gap-2 text-white text-sm 
+                     transform translate-y-2 group-hover:translate-y-0
+                     transition-transform duration-500 delay-100">
+                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+                        </svg>
+                        <span>{movie.duration} 分鐘</span>
+                      </div>
+
+
+                    </div>
+                  </div>
+
+                  {/* 資訊區 */}
+                  <div className="p-5 bg-neutral-900">
+                    <h3 className="text-lg font-medium text-white mb-4
+                   transition-colors duration-300
+                   group-hover:text-[#D26900]">
+                      {movie.title}
+                    </h3>
+
+                    {/* 類型 - 用分隔符號 */}
+                    <p className="text-sm text-gray-500">
+                      {movie.genre.split('/').map((g, i, arr) => (
+                        <span key={i}>
+                          <span className="transition-colors duration-300 group-hover:text-gray-400">
+                            {g.trim()}
+                          </span>
+                          {i < arr.length - 1 && <span className="mx-2">•</span>}
+                        </span>
+                      ))}
+                    </p>
+                    <div className="flex gap-2 mt-8
+        opacity-0 group-hover:opacity-100
+        transform translate-y-2 group-hover:translate-y-0
+        transition-all duration-500">
+
+                      {/* 查看詳情 */}
+                      <Link
+                        href={`/movies/${movie.id}`}
+                        className="flex-1 text-center
+            border border-gray-700 hover:border-[#D26900]
+            text-gray-400 hover:text-[#D26900]
+            py-2.5 
+            font-medium text-sm
+            transition-all duration-300">
+                        詳情
+                      </Link>
+
+                      {/* 立即訂票 */}
+                      <Link
+                        href={`/movies/${movie.id}#showtimes`}
+                        className="flex-1 text-center
+            bg-[#D26900] hover:bg-[#B85700]
+            text-white py-2.5 
+            font-medium text-sm
+            transition-all duration-300
+            hover:shadow-[0_0_20px_rgba(210,105,0,0.3)]">
+                        訂票
+                      </Link>
+                    </div>
                   </div>
                 </div>
               </Link>

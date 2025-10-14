@@ -273,3 +273,17 @@ INSERT INTO movie_images (movie_id, image_url, image_type, display_order) VALUES
 (2, 'https://i.pinimg.com/736x/e5/14/34/e51434b556c154fc5634f45250825f2e.jpg', 'still', 4),
 (2, 'https://i.pinimg.com/1200x/98/4a/f0/984af09083f0dfa91807a8270836a70e.jpg', 'still', 5);
 
+CREATE TABLE carousel_slides (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  image_url VARCHAR(500) NOT NULL,
+  display_order INT DEFAULT 0,
+  is_active BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+-- 插入範例資料
+INSERT INTO carousel_slides (image_url,display_order) VALUES
+( 'https://www.ambassador.com.tw/Uploads/492/2a923a69-e0f2-4b0f-b331-87f41fa3ce32.jpg', 1),
+('https://www.ambassador.com.tw/Uploads/496/2e6971ea-c1f1-46c0-a4d4-99eb193a2086.jpg', 2),
+('https://www.ambassador.com.tw/Uploads/494/38e43f29-cef3-4bf5-970a-c5a3cd45442a.jpg', 3),
+('https://www.ambassador.com.tw/Uploads/491/008da680-1852-48c6-89fe-aea6d08e5114.jpg', 4);
