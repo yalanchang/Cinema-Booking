@@ -1,9 +1,8 @@
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-import { cookies } from 'next/headers';
-
-const JWT_SECRET = process.env.JWT_SECRET || '123';
-
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import pool from '@/lib/db';
+import { RowDataPacket } from 'mysql2';
 
 export interface UserPayload {
   id: number;
@@ -12,7 +11,38 @@ export interface UserPayload {
   phone?: string; 
 
 }
-
+export async function getCurrentUser(): Promise<UserPayload | null> {
+    try {
+      const session = await getServerSession(authOptions);
+  
+      if (!session || !session.user?.email) {
+        return null;
+      }
+  
+      // 從資料庫查詢完整的使用者資料
+      const [users] = await pool.query<RowDataPacket[]>(
+        'SELECT id, name, email, phone FROM users WHERE email = ?',
+        [session.user.email]
+      );
+  
+      if (users.length === 0) {
+        return null;
+      }
+  
+      const user = users[0];
+  
+      return {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        phone: user.phone || null
+      };
+    } catch (error) {
+      console.error('取得使用者錯誤:', error);
+      return null;
+    }
+  }
+  
 // 加密密碼
 export async function hashPassword(password: string): Promise<string> {
   return bcrypt.hash(password, 10);
@@ -23,28 +53,5 @@ export async function verifyPassword(password: string, hashedPassword: string): 
   return bcrypt.compare(password, hashedPassword);
 }
 
-// 生成 JWT Token
-export function generateToken(user: UserPayload): string {
-  return jwt.sign(user, JWT_SECRET, { expiresIn: '7d' });
-}
-
-// 驗證 JWT Token
-export function verifyToken(token: string): UserPayload | null {
-  try {
-    return jwt.verify(token, JWT_SECRET) as UserPayload;
-  } catch (error) {
-    return null;
-  }
 
   
-}
-export async function getCurrentUser(): Promise<UserPayload | null> {
-    const cookieStore = await cookies();
-    const token = cookieStore.get('auth_token')?.value; 
-  
-    if (!token) {
-      return null;
-    }
-  
-    return verifyToken(token);
-  }

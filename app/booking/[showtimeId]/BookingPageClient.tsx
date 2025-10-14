@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { UserPayload } from '@/lib/auth';
+import { SkeletonSeatSelection, SkeletonBookingInfo } from '../../components/ui/Skeleton';
 
 interface Seat {
     id: number;
@@ -148,17 +149,35 @@ export default function BookingPageClient({ user }: BookingPageClientProps) {
         if (!showtimeInfo || selectedSeatIds.length === 0) return 0;
         return showtimeInfo.price * selectedSeatIds.length;
     };
-
-    if (loading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-900">
-                <div className="text-center">
-                    <div className="inline-block animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-red-600 mb-4"></div>
-                    <div className="text-white text-xl">載入座位中...</div>
+  if (loading) {
+    return (
+        <div className="min-h-screen bg-black pb-12">
+            <header className="text-white p-6 shadow-2xl">
+                <div className="container mx-auto">
+                    <div className="h-6 w-32 bg-gray-700 animate-pulse rounded mb-3" />
+                    <div className="h-10 w-64 bg-gray-700 animate-pulse rounded mb-2" />
+                    <div className="flex flex-wrap gap-4">
+                        <div className="h-6 w-32 bg-gray-700 animate-pulse rounded" />
+                        <div className="h-6 w-24 bg-gray-700 animate-pulse rounded" />
+                        <div className="h-6 w-28 bg-gray-700 animate-pulse rounded" />
+                        <div className="h-6 w-32 bg-gray-700 animate-pulse rounded" />
+                    </div>
                 </div>
-            </div>
-        );
-    }
+            </header>
+
+            <main className="container mx-auto p-6">
+                <div className="grid lg:grid-cols-3 gap-8">
+                    <div className="lg:col-span-2">
+                        <SkeletonSeatSelection />
+                    </div>
+                    <div className="lg:col-span-1">
+                        <SkeletonBookingInfo />
+                    </div>
+                </div>
+            </main>
+        </div>
+    );
+}
 
     if (error || !showtimeInfo) {
         return (
@@ -296,48 +315,48 @@ export default function BookingPageClient({ user }: BookingPageClientProps) {
                             <form onSubmit={handleSubmit} className="space-y-4">
                                 {/* 會員資訊顯示（不可編輯） */}
                                 <div>
-                                    <label className="block text-gray-300 text-sm font-semibold mb-2">
+                                    <label className="block text-gray-300 text-sm font-semibold mb-2 border-b border-gray-700 pb-2">
                                         姓名
                                     </label>
                                     <input
                                         type="text"
                                         value={user.name}
                                         readOnly
-                                        className="w-full px-4 py-3 bg-gray-600 text-gray-300 cursor-not-allowed focus:outline-none transition-all"
+                                        className="w-full p-4  text-gray-300 cursor-not-allowed focus:outline-none transition-all"
                                     />
                                 </div>
 
                                 <div>
-                                    <label className="block text-gray-300 text-sm font-semibold mb-2">
+                                    <label className="block text-gray-300 text-sm font-semibold mb-2 border-b border-gray-700 pb-2">
                                         電子郵件
                                     </label>
                                     <input
                                         type="email"
                                         value={user.email}
                                         readOnly
-                                        className="w-full px-4 py-3 bg-gray-600 text-gray-300 cursor-not-allowed focus:outline-none transition-all"
+                                        className="w-full p-4  text-gray-300 cursor-not-allowed focus:outline-none transition-all"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-gray-300 text-sm font-semibold mb-2">
+                                    <label className="block text-gray-300 text-sm font-semibold mb-2 border-b border-gray-700 pb-2">
                                         聯絡電話
                                     </label>
                                     <input
                                         type="tel"
                                         value={user.phone || '未提供'}
                                         readOnly
-                                        className="w-full px-4 py-3 bg-gray-600 text-gray-300 cursor-not-allowed focus:outline-none transition-all"
+                                        className="w-full p-4 text-gray-300 cursor-not-allowed focus:outline-none transition-all"
                                     />
                                 </div>
 
                                 <button
                                     type="submit"
                                     disabled={selectedSeatIds.length === 0 || isSubmitting}
-                                    className="w-full bg-red-600 hover:bg-red-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white py-4 font-bold text-lg transition-all hover:shadow-lg disabled:hover:shadow-none"
+                                    className="cursor-pointer w-full bg-red-600 hover:bg-red-700 disabled:bg-n6 disabled:cursor-not-allowed text-white py-4 font-bold text-lg transition-all hover:shadow-lg disabled:hover:shadow-none"
                                 >
                                     {isSubmitting ? (
                                         <span className="flex items-center justify-center gap-2">
-                                            <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white"></div>
+                                            <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white "></div>
                                             處理中...
                                         </span>
                                     ) : (

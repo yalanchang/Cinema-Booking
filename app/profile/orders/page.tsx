@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import Link from 'next/link';
-import { useAuth } from '../../contexts/AuthContext';
 
 interface Booking {
   id: number;
@@ -18,18 +18,18 @@ interface Booking {
 }
 
 export default function OrdersPage() {
-  const { user, loading: authLoading } = useAuth();
+  const { data: session, status } = useSession();
   const router = useRouter();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!authLoading && !user) {
+    if (status === 'unauthenticated') {
       router.push('/login');
-    } else if (user) {
+    } else if (status === 'authenticated') {
       fetchBookings();
     }
-  }, [user, authLoading, router]);
+  }, [status, router]);
 
   const fetchBookings = async () => {
     try {
@@ -55,7 +55,8 @@ export default function OrdersPage() {
     return timeString.substring(0, 5);
   };
 
-  if (authLoading || loading) {
+  // Loading 狀態
+  if (status === 'loading' || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-neutral-900">
         <div className="text-white text-xl">載入中...</div>
@@ -63,7 +64,8 @@ export default function OrdersPage() {
     );
   }
 
-  if (!user) {
+  // 未登入（這個其實不會執行到，因為上面的 useEffect 會導向登入頁）
+  if (!session) {
     return null;
   }
 

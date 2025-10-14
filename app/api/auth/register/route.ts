@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import pool from '@/lib/db';
-import { hashPassword, generateToken } from '@/lib/auth';
+import { hashPassword } from '@/lib/auth';
+import { sendVerificationEmail } from '@/lib/email';
 import { ResultSetHeader } from 'mysql2';
+import crypto from 'crypto';
 
 export async function POST(request: NextRequest) {
   try {
@@ -46,37 +48,36 @@ export async function POST(request: NextRequest) {
 
     // 加密密碼
     const hashedPassword = await hashPassword(password);
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+    const tokenExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
     // 建立使用者
     const [result] = await pool.query<ResultSetHeader>(
-      'INSERT INTO users (name, email, password, phone) VALUES (?, ?, ?, ?)',
-      [name, email, hashedPassword, phone || null]
+      `INSERT INTO users 
+       (name, email, password, phone, provider, email_verified, verification_token, verification_token_expires) 
+       VALUES (?, ?, ?, ?, 'local', FALSE, ?, ?)`,
+      [name, email, hashedPassword, phone || null, verificationToken, tokenExpires]
     );
 
     const userId = result.insertId;
 
-    // 生成 Token
-    const token = generateToken({ id: userId, email, name });
+    // 發送驗證信
+    try {
+      await sendVerificationEmail(email, name, verificationToken);
+    } catch (emailError) {
+      console.error('發送驗證信失敗:', emailError);
+    }
 
-    // 設定 Cookie
-    const response = NextResponse.json({
+    return NextResponse.json({
       success: true,
+      message: '註冊成功！請檢查您的信箱並點擊驗證連結。',
       data: { id: userId, name, email }
     });
-
-    response.cookies.set('auth_token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 60 * 60 * 24 * 7 // 7 天
-    });
-
-    return response;
 
   } catch (error: any) {
     console.error('註冊錯誤:', error);
     return NextResponse.json(
-      { success: false, error: '註冊失敗，請聯繫客服' },
+      { success: false, error: '註冊失敗，請稍後再試' },
       { status: 500 }
     );
   }

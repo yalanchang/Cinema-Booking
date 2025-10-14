@@ -2,6 +2,8 @@ import { getCurrentUser } from '@/lib/auth';
 import Link from 'next/link';
 import BookingPageClient from './BookingPageClient';
 
+
+
 export default async function BookingPage() {
   const user = await getCurrentUser();
 
@@ -17,17 +19,17 @@ export default async function BookingPage() {
               請先登入會員才能進行訂票
             </p>
           </div>
-          
+
           <div className="space-y-3">
             <Link
               href="/login"
-              className="block w-full bg-red-600 hover:bg-red-700 text-white py-3 rounded-lg font-semibold transition-colors"
+              className="block w-full bg-red-600 hover:bg-red-700 text-white py-3 rounded-xs font-semibold transition-colors"
             >
               前往登入
             </Link>
             <Link
               href="/register"
-              className="block w-full bg-n6 hover:bg-n7 text-white py-3 rounded-lg font-semibold transition-colors"
+              className="block w-full bg-n6 hover:bg-n7 text-white py-3 rounded-xs font-semibold transition-colors"
             >
               註冊新帳號
             </Link>
@@ -41,7 +43,10 @@ export default async function BookingPage() {
         </div>
       </div>
     );
+
   }
 
-  return <BookingPageClient user={user} />;
+  return (
+    <BookingPageClient user={user} />
+  );
 }

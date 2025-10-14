@@ -7,10 +7,13 @@ import Link from 'next/link';
 export default function Header({ 
 }) {
   return (
-    <header className="bg-neutral-900 text-white  shadow-2xl border-b border-gray-800">
+    <header className="bg-neutral-900 text-white  shadow-xl shadow-black/30 ">
       <div className="container mx-auto gap-4 flex flex-row items-center  justify-between">
       <div className="container mx-auto gap-8 flex flex-row items-center">
+      <Link href="/" >
         <img src="/logo.png" className="w-20 h-20"  alt="Logo" ></img>
+        </Link>
+
        <div>影城介紹</div>
        <Link href="/" className="text-white">
         電影介紹

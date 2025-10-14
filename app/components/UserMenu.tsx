@@ -3,10 +3,10 @@
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useAuth } from '../contexts/AuthContext';
+import { useSession, signOut } from 'next-auth/react';
 
 export default function UserMenu() {
-  const { user, logout, loading } = useAuth();
+  const { data: session, status } = useSession();
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
@@ -24,39 +24,54 @@ export default function UserMenu() {
   }, []);
 
   const handleLogout = async () => {
-    await logout();
     setIsOpen(false);
-    router.push('/');
-    router.refresh();
+    await signOut({ callbackUrl: '/' });
   };
 
-  if (loading) {
+  // Loading 狀態
+  if (status === 'loading') {
     return (
       <div className="w-10 h-10 rounded-full bg-gray-700 animate-pulse"></div>
     );
   }
 
-  if (!user) {
+  // 未登入
+  if (!session || !session.user) {
     return (
       <Link
         href="/login"
-        className="px-6 py-2 bg-[#D26900] hover:bg-[#B85700] text-white rounded-lg font-semibold transition-all"
+        className="px-6 py-2 bg-[#D26900] hover:bg-[#B85700] text-white rounded-lg font-semibold transition-all whitespace-nowrap"
       >
         登入
       </Link>
     );
   }
 
+  const user = session.user;
+
   return (
     <div className="relative" ref={menuRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-3  transition-all cursor-pointer"
+        className="flex items-center gap-3 transition-all cursor-pointer"
       >
-        <div className="w-10 h-10 rounded-full bg-[#D26900] flex items-center justify-center text-white font-bold">
-          {user.name.charAt(0).toUpperCase()}
-        </div>
-        <span className="text-white font-semibold hidden md:block whitespace-nowrap">{user.name}</span>
+        {/* 頭像 */}
+        {user.image ? (
+          <img
+            src={user.image}
+            alt={user.name || 'User'}
+            className="w-10 h-10 rounded-full object-cover"
+          />
+        ) : (
+          <div className="w-10 h-10 rounded-full bg-[#D26900] flex items-center justify-center text-white font-bold">
+            {user.name?.charAt(0).toUpperCase() || 'U'}
+          </div>
+        )}
+        
+        <span className="text-white font-semibold hidden md:block whitespace-nowrap">
+          {user.name}
+        </span>
+        
         <svg
           className={`w-4 h-4 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`}
           fill="none"
@@ -74,6 +89,11 @@ export default function UserMenu() {
           <div className="px-4 py-3 border-b border-gray-700">
             <p className="text-white font-semibold">{user.name}</p>
             <p className="text-gray-400 text-sm">{user.email}</p>
+            {session.user.provider && (
+              <p className="text-xs text-gray-500 mt-1">
+                透過 {session.user.provider === 'google' ? 'Google' : session.user.provider === 'facebook' ? 'Facebook' : '一般'} 登入
+              </p>
+            )}
           </div>
 
           {/* 選單項目 */}

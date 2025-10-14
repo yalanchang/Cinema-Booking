@@ -14,6 +14,20 @@ CREATE TABLE users (
     INDEX idx_email (email)
 )
 
+ALTER TABLE users 
+MODIFY COLUMN password VARCHAR(255) NULL;
+-- 一次性修改多個欄位
+ALTER TABLE users 
+  ADD COLUMN provider ENUM('local', 'google', 'facebook') DEFAULT 'local' AFTER phone,
+  ADD COLUMN provider_id VARCHAR(255) AFTER provider,
+  ADD COLUMN avatar VARCHAR(500) AFTER provider_id,
+  ADD COLUMN email_verified BOOLEAN DEFAULT FALSE AFTER avatar,
+  ADD COLUMN verification_token VARCHAR(255) AFTER email_verified,
+  ADD COLUMN verification_token_expires DATETIME AFTER verification_token;
+
+-- 然後建立索引
+CREATE INDEX idx_provider ON users(provider, provider_id);
+CREATE INDEX idx_verification_token ON users(verification_token);
 SELECT * FROM showtimes WHERE movie_id = 1;
 
 -- 更新訂單表，關聯會員

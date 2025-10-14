@@ -3,6 +3,9 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Carousel from './components/Carousel';
+import LoadingSpinner from './components/LoadingSpinner';
+
+
 
 interface Movie {
   id: number;
@@ -34,6 +37,7 @@ interface Showtime {
 
 export default function Home() {
   const [movies, setMovies] = useState<Movie[]>([]);
+  const [expectedCount, setExpectedCount] = useState(12);
   const [allShowtimes, setAllShowtimes] = useState<Showtime[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -67,9 +71,9 @@ export default function Home() {
         description: movie.description,
         link: `/movie/${movie.id}`
       }));
-      
+
       setCarouselSlides(slides);
-      
+
       // 取得所有場次（用於篩選）
       const showtimesPromises = moviesResult.data.map((movie: Movie) =>
         fetch(`/api/showtimes?movieId=${movie.id}`).then(res => res.json())
@@ -176,13 +180,7 @@ export default function Home() {
   const filteredMovies = getFilteredMovies();
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-neutral-900">
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-red-600 mb-4"></div>
-        </div>
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   if (error) {
@@ -214,11 +212,10 @@ export default function Home() {
         <div className="container mx-auto p-6">
           {/* 篩選控制 */}
           <div className="flex  md:flex-coloum gap-6 md:justify-start md:items-center">
-            
+
             {/* 日期 */}
             <div className="w-full md:w-[320px] relative group">
-            <span className="text-sm text-white">請選擇日期</span>
-
+              <span className="text-sm text-white">請選擇日期</span>
               <select
                 value={selectedDate}
                 onChange={(e) => setSelectedDate(e.target.value)}
@@ -281,6 +278,7 @@ export default function Home() {
       <main className="container mx-auto p-6">
         <div className="mb-8">
           <h2 className="text-3xl font-bold text-white mb-2">熱映中</h2>
+
         </div>
 
         {filteredMovies.length === 0 ? (
@@ -318,16 +316,16 @@ export default function Home() {
                   <div className="absolute top-4 right-4 bg-red-600 text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg z-10">
                     {movie.rating}
                   </div></div>
-          
+
                 {/* 電影資訊 */}
-                <div className="p-4 bg-gray-950 ">
+                <div className="p-4 bg-n7">
                   <h3 className="text-xl font-bold text-white mb-2 line-clamp-2 group-hover:text-[#D26900] transition-colors">
                     {movie.title}
                   </h3>
-          
-                  <div className="flex gap-2 mb-16 flex-wrap">
+
+                  <div className="flex gap-2 mb-24 flex-wrap">
                     {movie.genre.split('/').map((g, i) => (
-                      <span key={i} className="text-xs bg-gray-700 text-gray-300 px-2 py-1 rounded-full">
+                      <span key={i} className="mt-2 text-xs bg-n5 text-n2 px-2 py-1 rounded-full">
                         {g.trim()}
                       </span>
                     ))}

@@ -8,6 +8,10 @@
   --bg-neutral-800: #1f1f1f;
   --bg-neutral-700: #2c2c2c;
   --bg-neutral-600: #3a3a3a;
+  --bg-neutral-500: #525252;
+  --bg-neutral-400: #71717a;
+  --bg-neutral-300: #a1a1aa;
+  --bg-neutral-200: #d4d4d8;
 
 
 
@@ -22,6 +26,11 @@
   --color-n8: var(--bg-neutral-800);
   --color-n7: var(--bg-neutral-700);
   --color-n6: var(--bg-neutral-600);
+  --color-n5: var(--bg-neutral-500);
+  --color-n4: var(--bg-neutral-400);
+  --color-n3: var(--bg-neutral-300);
+  --color-n2: var(--bg-neutral-200);
+  
 
 
 }
@@ -39,32 +48,18 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+/* app/globals.css */
 @layer utilities {
-  @keyframes ken-burns {
-    0% { 
-      transform: scale(1); 
-    }
-    100% { 
-      transform: scale(1.1); 
-    }
-  }
-
-  @keyframes fade-in {
-    from {
-      opacity: 0;
-      transform: translateY(20px);
-    }
-    to {
-      opacity: 1;
+  @keyframes bounce-wave {
+    0%, 60%, 100% {
       transform: translateY(0);
     }
+    30% {
+      transform: translateY(-20px);
+    }
   }
 
-  .animate-ken-burns {
-    animation: ken-burns 20s ease-in-out infinite alternate;
-  }
-
-  .animate-fade-in {
-    animation: fade-in 0.6s ease-out;
+  .animate-bounce-wave {
+    animation: bounce-wave 1.2s ease-in-out infinite;
   }
 }

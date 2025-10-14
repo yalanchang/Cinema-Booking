@@ -3,13 +3,14 @@ import mysql from 'mysql2/promise';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }  
 ) {
   try {
-    const movieId = params.id;
-    if (!movieId) {
-        return NextResponse.json({ success: false, error: '缺少電影 ID' }, { status: 400 });
-      }
+    const { id } = await params;  
+    
+    if (!id) {
+      return NextResponse.json({ success: false, error: '缺少電影 ID' }, { status: 400 });
+    }
     const connection = await mysql.createConnection({
       host: process.env.DB_HOST,
       user: process.env.DB_USER,
@@ -19,7 +20,7 @@ export async function GET(
 
     const [rows] = await connection.execute(
       'SELECT * FROM movies WHERE id = ?',
-      [params.id]
+      [id]
     );
 
     await connection.end();

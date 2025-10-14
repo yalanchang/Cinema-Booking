@@ -45,7 +45,7 @@ export default function Carousel({ slides, autoPlayInterval = 5000 }: CarouselPr
   if (slides.length === 0) return null;
 
   return (
-    <div className="relative w-full h-[600px] overflow-hidden group"
+    <div className="relative w-full h-[400px] overflow-hidden group"
     onMouseEnter={() => setIsPaused(true)}  
     onMouseLeave={() => setIsPaused(false)} 
     >

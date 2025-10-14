@@ -1,36 +1,41 @@
 import { NextRequest, NextResponse } from 'next/server';
 import pool from '@/lib/db';
 import { RowDataPacket, ResultSetHeader } from 'mysql2';
-import { verifyToken } from '@/lib/auth';
-
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 
 export async function POST(request: NextRequest) {
-
-  const token = request.cookies.get('auth_token')?.value;
+  // ✅ 改用 NextAuth
+  const session = await getServerSession(authOptions);
   
-  if (!token) {
+  if (!session || !session.user?.email) {
     return NextResponse.json(
       { success: false, error: '請先登入會員' },
       { status: 401 }
     );
   }
 
-  const payload = verifyToken(token);
-  
-  if (!payload) {
+  // ✅ 從資料庫取得完整使用者資料
+  const [users] = await pool.query<RowDataPacket[]>(
+    'SELECT id, name, email, phone FROM users WHERE email = ?',
+    [session.user.email]
+  );
+
+  if (users.length === 0) {
     return NextResponse.json(
-      { success: false, error: '登入狀態已過期，請重新登入' },
+      { success: false, error: '找不到使用者資料' },
       { status: 401 }
     );
   }
+
+  const user = users[0];
 
   const connection = await pool.getConnection();
   
   try {
     const body = await request.json();
-    const { showtimeId, seatIds } = body; // seatIds 是一個陣列
+    const { showtimeId, seatIds } = body;
 
-    // 驗證必要欄位
     if (!showtimeId || !seatIds || !Array.isArray(seatIds) || seatIds.length === 0) {
       return NextResponse.json(
         { success: false, error: '請選擇座位' },
@@ -38,11 +43,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-
-    // 開始交易
     await connection.beginTransaction();
 
-    // 1. 鎖定場次記錄並檢查
     const [showtimes] = await connection.query<RowDataPacket[]>(
       'SELECT * FROM showtimes WHERE id = ? FOR UPDATE',
       [showtimeId]
@@ -57,9 +59,7 @@ export async function POST(request: NextRequest) {
     }
 
     const showtime = showtimes[0];
-    console.log(`Showtime: ${showtime.id}, Available seats: ${showtime.available_seats}`);
     
-    // 檢查座位數量
     if (showtime.available_seats < seatIds.length) {
       await connection.rollback();
       return NextResponse.json(
@@ -68,7 +68,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 2. 檢查選擇的座位是否有效且未被預訂
     const [validSeats] = await connection.query<RowDataPacket[]>(
       `SELECT s.id 
        FROM seats s
@@ -85,7 +84,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 3. 檢查座位是否已被預訂
     const [bookedSeats] = await connection.query<RowDataPacket[]>(
       'SELECT seat_id FROM showtime_booked_seats WHERE showtime_id = ? AND seat_id IN (?)',
       [showtimeId, seatIds]
@@ -93,58 +91,48 @@ export async function POST(request: NextRequest) {
 
     if (bookedSeats.length > 0) {
       await connection.rollback();
-      const bookedSeatIds = bookedSeats.map(bs => bs.seat_id);
       return NextResponse.json(
         { success: false, error: '部分座位已被預訂，請重新選擇' },
         { status: 400 }
       );
     }
 
-    // 4. 計算總金額
     const totalAmount = parseFloat(showtime.price) * seatIds.length;
-    console.log(`總金額: ${totalAmount}`);
 
-    // 5. 建立訂單
- const [bookingResult] = await connection.query<ResultSetHeader>(
-  `INSERT INTO bookings (user_id, showtime_id, customer_name, customer_email, customer_phone, total_amount, booking_status)
-   VALUES (?, ?, ?, ?, ?, ?, 'confirmed')`,
-   [
-    payload.id,          
-    showtimeId, 
-    payload.name,         
-    payload.email,       
-    payload.phone,
-    totalAmount
-  ]
-);
+    // ✅ 使用從資料庫查詢的 user 資料
+    const [bookingResult] = await connection.query<ResultSetHeader>(
+      `INSERT INTO bookings (user_id, showtime_id, customer_name, customer_email, customer_phone, total_amount, booking_status)
+       VALUES (?, ?, ?, ?, ?, ?, 'confirmed')`,
+      [
+        user.id,
+        showtimeId, 
+        user.name,
+        user.email,
+        user.phone || null,
+        totalAmount
+      ]
+    );
 
     const bookingId = bookingResult.insertId;
-    console.log(`✅ Booking created: ${bookingId}`);
 
-    // 6. 新增訂票座位記錄
     for (const seatId of seatIds) {
-      // 新增到 booking_seats
       await connection.query(
         'INSERT INTO booking_seats (booking_id, seat_id) VALUES (?, ?)',
         [bookingId, seatId]
       );
 
-      // 新增到 showtime_booked_seats
       await connection.query(
         'INSERT INTO showtime_booked_seats (showtime_id, seat_id, booking_id) VALUES (?, ?, ?)',
         [showtimeId, seatId, bookingId]
       );
     }
 
-    // 7. 更新場次可用座位數
     await connection.query(
       'UPDATE showtimes SET available_seats = available_seats - ? WHERE id = ?',
       [seatIds.length, showtimeId]
     );
 
-    // 提交交易
     await connection.commit();
-    console.log('✅ Transaction committed successfully');
 
     return NextResponse.json({
       success: true,
@@ -172,7 +160,6 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// GET - 取得訂單詳情
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
