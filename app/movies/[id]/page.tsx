@@ -7,6 +7,8 @@ import MovieGallery from '@/app/components/MovieGallery';
 import Animations from '@/app/components/Animations';
 import DateSelector from '@/app/components/DateSelector';
 import ShowtimeList,{ Showtime } from '@/app/components/ShowtimeList';
+import LoadingSpinner from '../../components/LoadingSpinner';
+
 
 interface Movie {
   id: number;
@@ -188,17 +190,9 @@ export default function MoviePage() {
     return checkDate.toDateString() === today.toDateString();
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-neutral-950">
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-[#D26900] mb-4"></div>
-
-        </div>
-      </div>
-    );
+ if (loading) {
+    return <LoadingSpinner />;
   }
-
   const availableDates = getAvailableDates();
   const filteredShowtimes = getShowtimesByDate();
   const movieTitle = movie?.title || (showtimes.length > 0 ? showtimes[0].movie_title : '電影');

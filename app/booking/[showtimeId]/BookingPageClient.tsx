@@ -149,35 +149,35 @@ export default function BookingPageClient({ user }: BookingPageClientProps) {
         if (!showtimeInfo || selectedSeatIds.length === 0) return 0;
         return showtimeInfo.price * selectedSeatIds.length;
     };
-  if (loading) {
-    return (
-        <div className="min-h-screen bg-black pb-12">
-            <header className="text-white p-6 shadow-2xl">
-                <div className="container mx-auto">
-                    <div className="h-6 w-32 bg-gray-700 animate-pulse rounded mb-3" />
-                    <div className="h-10 w-64 bg-gray-700 animate-pulse rounded mb-2" />
-                    <div className="flex flex-wrap gap-4">
-                        <div className="h-6 w-32 bg-gray-700 animate-pulse rounded" />
-                        <div className="h-6 w-24 bg-gray-700 animate-pulse rounded" />
-                        <div className="h-6 w-28 bg-gray-700 animate-pulse rounded" />
-                        <div className="h-6 w-32 bg-gray-700 animate-pulse rounded" />
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-black pb-12">
+                <header className="text-white p-6 shadow-2xl">
+                    <div className="container mx-auto">
+                        <div className="h-6 w-32 bg-gray-700 animate-pulse rounded mb-3" />
+                        <div className="h-10 w-64 bg-gray-700 animate-pulse rounded mb-2" />
+                        <div className="flex flex-wrap gap-4">
+                            <div className="h-6 w-32 bg-gray-700 animate-pulse rounded" />
+                            <div className="h-6 w-24 bg-gray-700 animate-pulse rounded" />
+                            <div className="h-6 w-28 bg-gray-700 animate-pulse rounded" />
+                            <div className="h-6 w-32 bg-gray-700 animate-pulse rounded" />
+                        </div>
                     </div>
-                </div>
-            </header>
+                </header>
 
-            <main className="container mx-auto p-6">
-                <div className="grid lg:grid-cols-3 gap-8">
-                    <div className="lg:col-span-2">
-                        <SkeletonSeatSelection />
+                <main className="container mx-auto p-6">
+                    <div className="grid lg:grid-cols-3 gap-8">
+                        <div className="lg:col-span-2">
+                            <SkeletonSeatSelection />
+                        </div>
+                        <div className="lg:col-span-1">
+                            <SkeletonBookingInfo />
+                        </div>
                     </div>
-                    <div className="lg:col-span-1">
-                        <SkeletonBookingInfo />
-                    </div>
-                </div>
-            </main>
-        </div>
-    );
-}
+                </main>
+            </div>
+        );
+    }
 
     if (error || !showtimeInfo) {
         return (
@@ -207,20 +207,55 @@ export default function BookingPageClient({ user }: BookingPageClientProps) {
 
     return (
         <div className="min-h-screen bg-black pb-12">
-            <header className="text-white p-6 shadow-2xl">
-                <div className="container mx-auto">
-                    <Link
-                        href={`/movie/${showtimeInfo.movie_id}`}
-                        className="text-red-100 hover:text-white mb-3 inline-flex items-center gap-2 transition-colors"
-                    >
-                        ← 返回場次選擇
-                    </Link>
-                    <h1 className="text-4xl font-bold mb-2">{showtimeInfo.movie_title}</h1>
-                    <div className="flex flex-wrap gap-4 text-red-100">
-                        <span>📅 {formatDate(showtimeInfo.show_date)}</span>
-                        <span>🕐 {formatTime(showtimeInfo.show_time)}</span>
-                        <span>🏛️ {showtimeInfo.theater_name}</span>
-                        <span>💰 NT$ {showtimeInfo.price} / 張</span>
+            <header className="bg-black/90 backdrop-blur-2xl border-b border-white/5">
+                <div className="container mx-auto px-6 py-6">
+
+                    {/* 麵包屑導航 */}
+                    <nav className="flex items-center gap-2 text-sm text-gray-400 mb-6">
+                        <Link href="/" className="hover:text-white transition-colors">首頁</Link>
+                        <span>/</span>
+                        <Link href={`/movies/${showtimeInfo.movie_id}`} className="hover:text-white transition-colors">
+                            {showtimeInfo.movie_title}
+                        </Link>
+                        <span>/</span>
+                        <span className="text-white">選擇座位</span>
+                    </nav>
+
+                    <div className="flex items-center justify-between">
+
+                        {/* 左側 - 標題和資訊 */}
+                        <div>
+                            <h1 className="text-3xl font-bold text-white mb-4">
+                                {showtimeInfo.movie_title}
+                            </h1>
+
+                            <div className="flex items-center gap-6 text-sm">
+                                <span className="text-gray-400">
+                                    {formatDate(showtimeInfo.show_date)}
+                                </span>
+                                <span className="w-1 h-1 bg-gray-600 rounded-full" />
+                                <span className="text-gray-400">
+                                    {formatTime(showtimeInfo.show_time)}
+                                </span>
+                                <span className="w-1 h-1 bg-gray-600 rounded-full" />
+                                <span className="text-gray-400">
+                                    {showtimeInfo.theater_name}
+                                </span>
+                                <span className="w-1 h-1 bg-gray-600 rounded-full" />
+                                <span className="text-[#D26900] font-semibold">
+                                    NT$ {showtimeInfo.price}
+                                </span>
+                            </div>
+                        </div>
+
+                        {/*  返回按鈕 */}
+                        <Link
+                            href={`/movies/${showtimeInfo.movie_id}`}
+                            className="px-4 py-2 text-sm text-gray-400 hover:text-white
+          border border-gray-700 hover:border-[#D26900]
+          rounded-lg transition-all duration-300">
+                            返回
+                        </Link>
                     </div>
                 </div>
             </header>
@@ -254,10 +289,10 @@ export default function BookingPageClient({ user }: BookingPageClientProps) {
                                                         onClick={() => toggleSeat(seat.id)}
                                                         disabled={isBooked}
                                                         className={`w-11 h-11 rounded-t-xl text-sm font-semibold transition-all duration-200 ${isBooked
-                                                                ? 'bg-gray-600 text-gray-500 cursor-not-allowed'
-                                                                : isSelected
-                                                                    ? 'bg-red-600 text-white scale-110 shadow-lg'
-                                                                    : 'bg-primary/90 text-white hover:bg-primary hover:scale-105 cursor-pointer'
+                                                            ? 'bg-gray-600 text-gray-500 cursor-not-allowed'
+                                                            : isSelected
+                                                                ? 'bg-red-600 text-white scale-110 shadow-lg'
+                                                                : 'bg-primary/90 text-white hover:bg-primary hover:scale-105 cursor-pointer'
                                                             }`}
                                                         title={`${row}${seat.seat_number}${isBooked ? ' (已售)' : ''}`}
                                                     >
