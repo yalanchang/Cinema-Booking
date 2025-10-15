@@ -104,7 +104,7 @@ export default function BookingPageClient({ user }: BookingPageClientProps) {
 
             if (result.success) {
                 alert(result.data.message);
-                router.push(`/confirmation/${result.data.bookingId}`);
+                router.push(`/booking/confirmation/${result.data.bookingId}`);  
             } else {
                 alert(result.error || '訂票失敗');
                 fetchSeats();

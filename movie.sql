@@ -287,3 +287,9 @@ INSERT INTO carousel_slides (image_url,display_order) VALUES
 ('https://www.ambassador.com.tw/Uploads/496/2e6971ea-c1f1-46c0-a4d4-99eb193a2086.jpg', 2),
 ('https://www.ambassador.com.tw/Uploads/494/38e43f29-cef3-4bf5-970a-c5a3cd45442a.jpg', 3),
 ('https://www.ambassador.com.tw/Uploads/491/008da680-1852-48c6-89fe-aea6d08e5114.jpg', 4);
+
+ALTER TABLE bookings 
+ADD COLUMN payment_method VARCHAR(50),
+ADD COLUMN payment_transaction_id VARCHAR(255),
+ADD COLUMN payment_status ENUM('pending', 'paid', 'failed', 'refunded') DEFAULT 'pending';
+```
