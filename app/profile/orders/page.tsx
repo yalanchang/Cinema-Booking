@@ -74,7 +74,7 @@ export default function OrdersPage() {
       <header className="text-white p-6 shadow-2xl border-b border-gray-800">
         <div className="container mx-auto flex items-center justify-between">
           <Link href="/profile" className="text-gray-400 hover:text-white">
-            ← 返回會員中心
+        返回會員中心
           </Link>
           <h1 className="text-2xl font-bold">訂票記錄</h1>
           <div className="w-24"></div>
@@ -85,7 +85,6 @@ export default function OrdersPage() {
         <div className="max-w-4xl mx-auto">
           {bookings.length === 0 ? (
             <div className="text-center py-20">
-              <div className="text-6xl mb-4">🎫</div>
               <p className="text-gray-400 text-xl mb-4">尚無訂票記錄</p>
               <Link
                 href="/"

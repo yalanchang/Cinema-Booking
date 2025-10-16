@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useEffect, useState  } from 'react';
+import { useParams, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+// import { QRCodeSVG } from 'qrcode.react';
 
 interface BookingDetails {
     id: number;
@@ -28,14 +29,18 @@ interface BookingDetails {
 export default function ConfirmationPage() {
     const params = useParams();
     const bookingId = params.bookingId;
-
+    const searchParams = useSearchParams();
     const [booking, setBooking] = useState<BookingDetails | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [paymentLoading, setPaymentLoading] = useState(false);
+    const paymentStatus = searchParams.get('payment');
+
 
     useEffect(() => {
         if (bookingId) {
             fetchBooking();
+            fetchBooking().finally(() => setLoading(false));
         }
     }, [bookingId]);
 
@@ -48,6 +53,7 @@ export default function ConfirmationPage() {
             if (result.success) {
                 setBooking(result.data);
                 setError(null);
+            
             } else {
                 setError(result.error || '訂單不存在');
             }
@@ -59,6 +65,8 @@ export default function ConfirmationPage() {
         }
     };
 
+
+  
     const formatDate = (dateString: string) => {
         if (!dateString) return '';
         const parts = dateString.split('T')[0].split('-');
@@ -85,7 +93,72 @@ export default function ConfirmationPage() {
         const minutes = String(date.getMinutes()).padStart(2, '0');
         return `${year}/${month}/${day} ${hours}:${minutes}`;
     };
-
+    const handlePayment = async (method: string) => {
+        try {
+            setPaymentLoading(true);
+            const amount = Math.floor(booking?.total_amount || 0);
+    
+            if (method === 'ecpay') {
+                // 綠界付款 - 使用表單提交方式
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '/api/payments/ecpay/create';
+                form.style.display = 'none';
+                
+                const bookingInput = document.createElement('input');
+                bookingInput.type = 'hidden';
+                bookingInput.name = 'bookingId';
+                bookingInput.value = String(booking?.id);
+                form.appendChild(bookingInput);
+                
+                // 建立隱藏的 input 欄位 - amount
+                const amountInput = document.createElement('input');
+                amountInput.type = 'hidden';
+                amountInput.name = 'amount';
+                amountInput.value = String(amount);
+                form.appendChild(amountInput);
+                
+                // 建立隱藏的 input 欄位 - method
+                const methodInput = document.createElement('input');
+                methodInput.type = 'hidden';
+                methodInput.name = 'method';
+                methodInput.value = method;
+                form.appendChild(methodInput);
+                
+                // 將表單加入頁面並提交
+                document.body.appendChild(form);
+                form.submit();
+                // 重要：不要移除表單或設定 loading = false，因為頁面會跳轉
+                
+            } else {
+                // 其他付款方式（LINE Pay、信用卡等）- 保持原本的邏輯
+                const response = await fetch('/api/payments/create', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        bookingId: booking?.id,
+                        amount: amount,
+                        method: method
+                    }),
+                });
+    
+                const result = await response.json();
+    
+                if (result.success && result.paymentUrl) {
+                    window.location.href = result.paymentUrl;
+                } else {
+                    alert('付款連結生成失敗，請稍後再試');
+                    setPaymentLoading(false);
+                }
+            }
+        } catch (err) {
+            console.error('Payment error:', err);
+            alert('付款失敗，請稍後再試');
+            setPaymentLoading(false);
+        }
+    };
     const getPaymentMethodName = (method: string) => {
         const methods: { [key: string]: string } = {
             'linepay': 'LINE Pay',
@@ -129,8 +202,6 @@ export default function ConfirmationPage() {
 
     return (
         <div className="min-h-screen bg-neutral-900">
-
-            {/* Header */}
             <header className="relative bg-gradient-to-br from-primary/70 via-primary/80 to-primary/90 text-white overflow-hidden">
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.1),transparent_50%)]" />
 
@@ -152,8 +223,15 @@ export default function ConfirmationPage() {
                     </div>
                 </div>
 
-                <div className="absolute bottom-0 left-0 right-0">
-                    <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <div className="absolute bottom-0 left-0 right-0 h-32" style={{ marginBottom: '-2px' }}>
+                    <svg
+                        viewBox="0 0 1440 120"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="w-full h-full"
+                        preserveAspectRatio="none"
+                        style={{ display: 'block' }}
+                    >
                         <path d="M0 120L60 105C120 90 240 60 360 45C480 30 600 30 720 37.5C840 45 960 60 1080 67.5C1200 75 1320 75 1380 75L1440 75V120H1380C1320 120 1200 120 1080 120C960 120 840 120 720 120C600 120 480 120 360 120C240 120 120 120 60 120H0Z" fill="#171717" />
                     </svg>
                 </div>
@@ -172,23 +250,27 @@ export default function ConfirmationPage() {
                                         {booking.movie_title}
                                     </h2>
 
-                                    <div className="flex flex-wrap gap-3 text-sm text-gray-400">
-                                        <span>{booking.genre}</span>
-                                        <span>•</span>
-                                        <span>{booking.duration}分鐘</span>
-                                        <span>•</span>
-                                        <span>{booking.rating}</span>
-                                        {/* QR Code 區域 (可選) */}
-                                        <div className="hidden md:block">
-                                            <div className="w-24 h-24 bg-white rounded-xs flex items-center justify-center">
-                                                <div className="text-xs text-gray-400">QR Code</div>
-                                            </div>
+                                    <div className="flex justify-between">
+                                        <div className="flex flex-wrap gap-3 text-sm text-gray-400">
+                                            <span>{booking.genre}</span>
+                                            <span>•</span>
+                                            <span>{booking.duration}分鐘</span>
+                                            <span>•</span>
+                                            <span>{booking.rating}</span>
                                         </div>
+                                        {/* <div className="hidden md:block">
+                                            <div className="w-24 h-24 bg-white p-2">
+                                                <QRCodeSVG
+                                                    value={`http://localhost:3000/booking/confirmation/${booking.id}`}
+                                                    size={80}
+                                                    level="H"
+                                                />
+                                            </div>
+                                        </div> */}
                                     </div>
 
                                 </div>
                             </div>
-
 
 
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -261,6 +343,70 @@ export default function ConfirmationPage() {
                                     訂票時間：{formatDateTime(booking.created_at)}
                                 </p>
                             </div>
+                        </div>
+                        <div className="p-8 border-b border-gray-700">
+                            <h3 className="text-lg font-bold text-white mb-4">付款資訊</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <p className="text-gray-400 text-sm mb-1">付款方式</p>
+                                    <p className="text-white font-semibold">{getPaymentMethodName(booking.payment_method)}</p>
+                                </div>
+                                <div>
+                                    <p className="text-gray-400 text-sm mb-1">付款狀態</p>
+                                    <p className={`font-semibold mb-4 ${booking.payment_status === 'paid' ? 'text-red-500' : 'text-yellow-500'}`}>
+                                        {booking.payment_status === 'paid' ? '已付款' : '待付款'}
+                                    </p>
+                                    {/* 付款狀態提示 */}
+                                    {paymentStatus === 'success' && booking.payment_status === 'paid' && (
+                                        <div className="mb-6  pt-4 ">
+                                            <div className="flex items-center gap-3 border border-red-500 p-4 rounded-xs border-xs" >
+                                                <div>
+                                                    <p className="text-red-500 font-medium">付款成功！</p>
+                                                    <p className="text-red-400 text-sm">您的訂單已完成付款，感謝您的購買</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {paymentStatus === 'cancelled' && (
+                                        <div className="mb-6 ">
+                                            <div className="flex items-center gap-3">
+                                                <div>
+                                                    <p className="text-yellow-500 font-semibold">付款已取消</p>
+                                                    <p className="text-yellow-400 text-sm">您可以稍後繼續完成付款</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {paymentStatus === 'error' && (
+                                        <div className="mb-6 bg-red-500/10 border border-red-500/30 rounded-lg p-4">
+                                            <div className="flex items-center gap-3">
+                                                <span className="text-2xl">❌</span>
+                                                <div>
+                                                    <p className="text-red-500 font-semibold">付款失敗</p>
+                                                    <p className="text-red-400 text-sm">請重新嘗試付款</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                            {booking.payment_status !== 'paid' && (
+                                <div className="flex ">
+                                    <button
+                                        type='button'
+                                        onClick={() => handlePayment('ecpay')}
+                                        disabled={paymentLoading}
+                                        className="w-full mt-4 flex items-center justify-center gap-3 py-4 px-6 bg-[#00AA5B] hover:bg-[#009951] text-white rounded-xs font-semibold transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.31-8.86c-1.77-.45-2.34-.94-2.34-1.67 0-.84.79-1.43 2.1-1.43 1.38 0 1.9.66 1.94 1.64h1.71c-.05-1.34-.87-2.57-2.49-2.97V5H10.9v1.69c-1.51.32-2.72 1.3-2.72 2.81 0 1.79 1.49 2.69 3.66 3.21 1.95.46 2.34 1.15 2.34 1.87 0 .53-.39 1.39-2.1 1.39-1.6 0-2.23-.72-2.32-1.64H8.04c.1 1.7 1.36 2.66 2.86 2.97V19h2.34v-1.67c1.52-.29 2.72-1.16 2.73-2.77-.01-2.2-1.9-2.96-3.66-3.42z" />
+                                        </svg>
+                                        綠界科技付款
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     </div>
 

@@ -1,47 +1,45 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyECPayCallback } from '@/lib/ecpay';
-import pool from '@/lib/db';
+import pool  from '@/lib/db';
 
 export async function POST(request: NextRequest) {
-  try {
-    const formData = await request.formData();
-    const data: any = {};
+    try {
+        
+        const formData = await request.formData();
+        const data = Object.fromEntries(formData);
+        
+        
+        if (data.RtnCode === '1') {
+            const merchantTradeNo = data.MerchantTradeNo as string;
+            const bookingId = parseInt(merchantTradeNo.substring(2, 8));
+            const connection = await pool.getConnection();
+            const paymentDate = data.PaymentDate as string;
+            const tradeNo = data.TradeNo as string;
 
-    formData.forEach((value, key) => {
-      data[key] = value;
-    });
 
-    // 驗證資料
-    const isValid = verifyECPayCallback(data);
-
-    if (!isValid) {
-      console.error('ECPay Callback Verification Failed');
-      return new NextResponse('0|Verification Failed', { status: 400 });
+            
+            try {
+                const [result]: any = await connection.query(
+                    'UPDATE bookings SET payment_status = ?, payment_method = ?,payment_transaction_id = ?, updated_at = NOW() WHERE id = ?',
+                    ['paid', 'ecpay', tradeNo, bookingId]
+                );
+                
+                
+                if (result.affectedRows > 0) {
+                    return new NextResponse('1|OK', { status: 200 });
+                } else {
+                    return new NextResponse('0|Booking not found', { status: 200 });
+                }
+                
+            } finally {
+                connection.release();
+            }
+        }
+        
+        console.log('Payment failed:', data.RtnMsg);
+        return new NextResponse('0|Payment Failed', { status: 200 });
+        
+    } catch (error) {
+        console.error('Callback error:', error);
+        return new NextResponse('0|Error: ' + (error as Error).message, { status: 200 });
     }
-
-    // 解析訂單編號
-    const merchantTradeNo = data.MerchantTradeNo;
-    const bookingId = merchantTradeNo.split('_')[0].replace('BK', '');
-    const rtnCode = data.RtnCode;
-
-    if (rtnCode === '1') {
-      // 付款成功
-      await pool.query(
-        `UPDATE bookings 
-         SET payment_status = 'paid', 
-             booking_status = 'confirmed',
-             payment_transaction_id = ?
-         WHERE id = ?`,
-        [data.TradeNo, bookingId]
-      );
-
-      return new NextResponse('1|OK');
-    } else {
-      // 付款失敗
-      return new NextResponse('0|Payment Failed');
-    }
-  } catch (error) {
-    console.error('ECPay Callback Error:', error);
-    return new NextResponse('0|Error', { status: 500 });
-  }
 }

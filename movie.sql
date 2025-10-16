@@ -292,4 +292,9 @@ ALTER TABLE bookings
 ADD COLUMN payment_method VARCHAR(50),
 ADD COLUMN payment_transaction_id VARCHAR(255),
 ADD COLUMN payment_status ENUM('pending', 'paid', 'failed', 'refunded') DEFAULT 'pending';
-```
+-- 查看欄位名稱
+
+-- 查看 public schema 的表
+SELECT table_schema, table_name
+  FROM information_schema.tables
+ WHERE table_name = 'bookings';
