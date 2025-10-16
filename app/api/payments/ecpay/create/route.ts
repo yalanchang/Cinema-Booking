@@ -21,13 +21,13 @@ export async function POST(request: NextRequest) {
 
         // ⚠️ 重要：這裡要用你的 ngrok URL
         // 請將下面的 URL 替換成你的 ngrok URL
-        const ngrokUrl = 'https://YOUR-NGROK-ID.ngrok-free.app'; // ← 替換成你的 ngrok URL
+        const ngrokUrl = 'https://degradedly-pseudoorganic-teena.ngrok-free.dev'; // ← 替換成你的 ngrok URL
         
         console.log('Using callback URL:', `${ngrokUrl}/api/payments/ecpay/callback`);
 
         // 綠界參數
         const params: any = {
-            MerchantID: '3002607',  // 測試商店代號
+            MerchantID: '3002607',  
             MerchantTradeNo: merchantTradeNo,
             MerchantTradeDate: merchantTradeDate,
             PaymentType: 'aio',
@@ -37,10 +37,8 @@ export async function POST(request: NextRequest) {
             ChoosePayment: 'ALL',
             EncryptType: 1,
             
-            // ⭐ 使用 ngrok URL 讓綠界可以回呼
             ReturnURL: `${ngrokUrl}/api/payments/ecpay/callback`,
             
-            // ⭐ 客戶端跳轉還是用 localhost
             ClientBackURL: `http://localhost:3000/booking/confirmation/${bookingId}?payment=success`,
             
             CustomField1: bookingId
