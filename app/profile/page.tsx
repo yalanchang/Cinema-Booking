@@ -44,7 +44,7 @@ export default function ProfilePage() {
       <main className="container mx-auto p-6">
         <div className="max-w-4xl mx-auto">
           {/* 個人資訊卡片 */}
-          <div className="bg-gray-800 rounded-xl p-8 shadow-xl mb-6">
+          <div className="bg-n8 rounded-xs p-8 shadow-xl mb-6">
             <div className="flex items-center gap-6 mb-6">
               {/* 頭像 */}
               {user.image ? (
@@ -119,7 +119,7 @@ export default function ProfilePage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Link
               href="/profile/orders"
-              className="bg-gray-800 hover:bg-gray-700 rounded-xl p-6 transition-all group"
+              className="bg-n8 hover:bg-n7 rounded-xs p-6 transition-all group"
             >
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-full bg-[#D26900] flex items-center justify-center text-white group-hover:scale-110 transition-transform">
@@ -136,7 +136,7 @@ export default function ProfilePage() {
 
             <Link
               href="/"
-              className="bg-gray-800 hover:bg-gray-700 rounded-xl p-6 transition-all group"
+              className="bg-n8 hover:bg-n7 rounded-xs p-6 transition-all group"
             >
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-full bg-[#D26900] flex items-center justify-center text-white group-hover:scale-110 transition-transform">

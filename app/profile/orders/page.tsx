@@ -55,7 +55,6 @@ export default function OrdersPage() {
     return timeString.substring(0, 5);
   };
 
-  // Loading 狀態
   if (status === 'loading' || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-neutral-900">
@@ -64,7 +63,6 @@ export default function OrdersPage() {
     );
   }
 
-  // 未登入（這個其實不會執行到，因為上面的 useEffect 會導向登入頁）
   if (!session) {
     return null;
   }
@@ -88,7 +86,7 @@ export default function OrdersPage() {
               <p className="text-gray-400 text-xl mb-4">尚無訂票記錄</p>
               <Link
                 href="/"
-                className="inline-block bg-[#D26900] hover:bg-[#B85700] text-white px-6 py-3 rounded-lg font-semibold transition-all"
+                className="inline-block bg-[#D26900] hover:bg-[#B85700] text-white px-6 py-3 rounded-xs font-semibold transition-all"
               >
                 立即訂票
               </Link>
@@ -96,7 +94,7 @@ export default function OrdersPage() {
           ) : (
             <div className="space-y-4">
               {bookings.map((booking) => (
-                <div key={booking.id} className="bg-gray-800 rounded-xl p-6 shadow-xl">
+                <div key={booking.id} className="border-primary/50 border rounded-xs p-6  border-3">
                   <div className="flex justify-between items-start mb-4">
                     <div>
                       <h3 className="text-xl font-bold text-white mb-2">
@@ -106,7 +104,7 @@ export default function OrdersPage() {
                         訂單編號：#{booking.id}
                       </p>
                     </div>
-                    <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                    <span className={`px-3 py-1 rounded-xs text-sm font-semibold ${
                       booking.booking_status === 'confirmed'
                         ? 'bg-green-900 text-green-300'
                         : 'bg-gray-700 text-gray-300'

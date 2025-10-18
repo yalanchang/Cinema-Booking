@@ -31,7 +31,7 @@ export default function MembershipSection() {
   
               <div className="flex gap-4">
                 <Link
-                  href="/register"
+                  href="/login"
                   className="bg-white text-[#D26900] px-8 py-3 
                     font-bold text-lg
                     hover:bg-gray-100

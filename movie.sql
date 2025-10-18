@@ -298,3 +298,39 @@ ADD COLUMN payment_status ENUM('pending', 'paid', 'failed', 'refunded') DEFAULT 
 SELECT table_schema, table_name
   FROM information_schema.tables
  WHERE table_name = 'bookings';
+
+-- 參數設定
+SET @start_date      = CURDATE();         -- 起始日
+SET @days_to_insert  = 6;               
+SET @movie_id        = 2;
+SET @theater_id      = 1;
+SET @price           = 280;
+SET @available_seats = 50;
+
+INSERT INTO showtimes (movie_id, theater_id, show_date, show_time, price, available_seats)
+SELECT
+    @movie_id    AS movie_id,
+    @theater_id  AS theater_id,
+    DATE_ADD(@start_date, INTERVAL day_offset DAY) AS show_date,
+    t.show_time,
+    @price       AS price,
+    @available_seats AS available_seats
+FROM (
+    SELECT 0 AS day_offset
+    UNION ALL SELECT 1
+    UNION ALL SELECT 2
+    UNION ALL SELECT 3
+    UNION ALL SELECT 4
+    UNION ALL SELECT 5
+) AS d
+CROSS JOIN (
+    -- 這裡先列出所有可能時間，再用 WHERE 過濾
+    SELECT '12:00:00' AS show_time
+    UNION ALL SELECT '16:00:00'
+    UNION ALL SELECT '19:30:00'
+    UNION ALL SELECT '14:00:00'
+    UNION ALL SELECT '19:00:00'
+) AS t
+WHERE
+    d.day_offset < @days_to_insert;
+    

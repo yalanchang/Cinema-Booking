@@ -6,6 +6,7 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
+    const { id } = await params;
     const connection = await mysql.createConnection({
       host: process.env.DB_HOST,
       user: process.env.DB_USER,
@@ -15,7 +16,7 @@ export async function GET(
 
     const [rows] = await connection.execute(
       'SELECT * FROM movie_images WHERE movie_id = ? ORDER BY display_order',
-      [params.id]
+      [id]
     );
 
     await connection.end();
