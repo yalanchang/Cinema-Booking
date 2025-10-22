@@ -66,8 +66,8 @@ export default function ProfilePage() {
                 
                 {/* 顯示登入方式 */}
                 {user.provider && (
-                  <div className="mt-2">
-                    <span className="inline-flex items-center gap-2 px-3 py-1 bg-gray-700 rounded-full text-xs text-gray-300">
+                  <div className="mt-4">
+                    <span className="inline-flex items-center gap-2   text-xs text-gray-300">
                       {user.provider === 'google' && (
                         <>
                           <svg className="w-4 h-4" viewBox="0 0 24 24">
@@ -122,7 +122,7 @@ export default function ProfilePage() {
               className="bg-n8 hover:bg-n7 rounded-xs p-6 transition-all group"
             >
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-[#D26900] flex items-center justify-center text-white group-hover:scale-110 transition-transform">
+                <div className="w-12 h-12 rounded-full bg-[#D26900] flex items-center justify-center text-white transition-transform">
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
                   </svg>
@@ -139,7 +139,7 @@ export default function ProfilePage() {
               className="bg-n8 hover:bg-n7 rounded-xs p-6 transition-all group"
             >
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-[#D26900] flex items-center justify-center text-white group-hover:scale-110 transition-transform">
+                <div className="w-12 h-12 rounded-full bg-[#D26900] flex items-center justify-center text-white transition-transform">
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" />
                   </svg>

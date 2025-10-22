@@ -334,3 +334,88 @@ CROSS JOIN (
 WHERE
     d.day_offset < @days_to_insert;
     
+-- =====================================================
+-- 為現有的 users 資料表新增欄位
+-- =====================================================
+
+-- 1. 新增性別欄位
+ALTER TABLE `users` 
+ADD COLUMN `gender` ENUM('male', 'female', 'other', 'prefer_not_to_say') 
+CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci 
+DEFAULT NULL 
+AFTER `phone`;
+
+-- 2. 新增生日欄位
+ALTER TABLE `users` 
+ADD COLUMN `birthdate` DATE DEFAULT NULL 
+AFTER `gender`;
+
+-- 3. 新增地址相關欄位
+ALTER TABLE `users` 
+ADD COLUMN `address` VARCHAR(500) 
+CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci 
+DEFAULT NULL 
+AFTER `birthdate`;
+
+ALTER TABLE `users` 
+ADD COLUMN `city` VARCHAR(50) 
+CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci 
+DEFAULT NULL 
+AFTER `address`;
+
+ALTER TABLE `users` 
+ADD COLUMN `district` VARCHAR(50) 
+CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci 
+DEFAULT NULL 
+AFTER `city`;
+
+ALTER TABLE `users` 
+ADD COLUMN `zip_code` VARCHAR(10) 
+CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci 
+DEFAULT NULL 
+AFTER `district`;
+
+-- 4. 新增緊急聯絡人欄位
+ALTER TABLE `users` 
+ADD COLUMN `emergency_contact` VARCHAR(100) 
+CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci 
+DEFAULT NULL 
+AFTER `zip_code`;
+
+ALTER TABLE `users` 
+ADD COLUMN `emergency_phone` VARCHAR(20) 
+CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci 
+DEFAULT NULL 
+AFTER `emergency_contact`;
+
+-- 5. 新增偏好設定欄位
+ALTER TABLE `users` 
+ADD COLUMN `preferred_language` ENUM('zh-TW', 'zh-CN', 'en') 
+CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci 
+DEFAULT 'zh-TW' 
+AFTER `emergency_phone`;
+
+-- 6. 新增通知設定欄位
+ALTER TABLE `users` 
+ADD COLUMN `newsletter` TINYINT(1) DEFAULT 0 
+AFTER `preferred_language`;
+
+ALTER TABLE `users` 
+ADD COLUMN `sms_notification` TINYINT(1) DEFAULT 0 
+AFTER `newsletter`;
+
+-- 7. 新增最後登入時間欄位
+ALTER TABLE `users` 
+ADD COLUMN `last_login_at` DATETIME DEFAULT NULL 
+AFTER `sms_notification`;
+
+-- 8. 新增帳號狀態欄位
+ALTER TABLE `users` 
+ADD COLUMN `is_active` TINYINT(1) DEFAULT 1 
+AFTER `last_login_at`;
+
+-- 9. 為常用查詢欄位新增索引
+ALTER TABLE `users` ADD INDEX `idx_phone` (`phone`);
+ALTER TABLE `users` ADD INDEX `idx_provider` (`provider`);
+ALTER TABLE `users` ADD INDEX `idx_created_at` (`created_at`);
+ALTER TABLE `users` ADD INDEX `idx_is_active` (`is_active`);

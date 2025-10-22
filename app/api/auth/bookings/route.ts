@@ -183,6 +183,7 @@ export async function GET(request: NextRequest) {
         b.id,
         b.total_amount,
         b.booking_status,
+        b.payment_method,
         b.created_at,
         s.show_date,
         s.show_time,
