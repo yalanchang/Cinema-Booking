@@ -63,7 +63,7 @@ export default function OrdersPage() {
         setUserInfo(userData);
       }
     } catch (error) {
-      console.error('Error fetching user info:', error);
+      console.error('Error fetching user :', error);
     }
   };
 
@@ -117,7 +117,6 @@ export default function OrdersPage() {
 
   const upcomingBookings = bookings.filter(b => isUpcoming(b.show_date, b.show_time));
   const historyBookings = bookings.filter(b => !isUpcoming(b.show_date, b.show_time));
-
   const displayedBookings = activeTab === 'upcoming' ? upcomingBookings : historyBookings;
 
   if (status === 'loading' || loading) {

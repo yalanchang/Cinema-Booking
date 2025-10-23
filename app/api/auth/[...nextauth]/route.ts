@@ -1,4 +1,3 @@
-// app/api/auth/[...nextauth]/route.ts
 
 import NextAuth, { NextAuthOptions } from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
@@ -55,7 +54,7 @@ export const authOptions: NextAuthOptions = {
           throw new Error('Email 或密碼錯誤');
         }
 
-        // ✅ 檢查 Email 是否已驗證（僅一般註冊）
+        // 一般註冊
         if (!user.email_verified) {
           throw new Error('請先驗證您的電子郵件。請檢查您的信箱。');
         }
@@ -73,7 +72,6 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async signIn({ user, account, profile }) {
  if (!account) {
-        console.error('沒有 account 物件');
         return false;
       }
       try {
@@ -129,7 +127,8 @@ export const authOptions: NextAuthOptions = {
               'SELECT id, name, email, phone, avatar, provider, provider_id FROM users WHERE provider = ? AND provider_id = ?',
               [account.provider, account.providerAccountId]
             );
-    
+
+
             if (users.length > 0) {
               const dbUser = users[0];
               token.id = dbUser.id;
@@ -148,6 +147,7 @@ export const authOptions: NextAuthOptions = {
               'SELECT id, name, email, phone, avatar, provider FROM users WHERE email = ? AND provider = "local"',
               [user.email]
             );
+            
 
         if (users.length > 0) {
           const dbUser = users[0];
@@ -156,9 +156,31 @@ export const authOptions: NextAuthOptions = {
           token.provider = dbUser.provider;
           token.picture = dbUser.avatar;
         }
+        
+      }
+      else if (token.email) {
+        // ← 新增：每次 session 訪問時重新整理
+        const [users] = await pool.query<RowDataPacket[]>(
+          'SELECT id, name, email, phone, avatar, provider FROM users WHERE email = ?',
+          [token.email]
+        );
+    
+        if (users.length > 0) {
+          const dbUser = users[0];
+          token.id = dbUser.id;
+          token.name = dbUser.name;
+          token.email = dbUser.email;
+          token.phone = dbUser.phone;
+          token.provider = dbUser.provider;
+          token.picture = dbUser.avatar;
+        }
       }
       return token;
     },
+
+
+    
+    
 
     async session({ session, token }) {
       if (session.user) {
