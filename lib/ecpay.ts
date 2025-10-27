@@ -44,7 +44,6 @@ function generateCheckMacValue(params: any): string {
   return hash;
 }
 
-// 建立付款表單資料
 export function createECPayForm(
   orderId: string,
   amount: number,
@@ -67,7 +66,7 @@ export function createECPayForm(
     ItemName: itemName,
     ReturnURL: returnUrl,
     OrderResultURL: orderResultUrl,
-    ChoosePayment: 'ALL', // 可選: Credit(信用卡)、WebATM、ATM、CVS、BARCODE
+    ChoosePayment: 'ALL', 
     EncryptType: 1,
   };
 

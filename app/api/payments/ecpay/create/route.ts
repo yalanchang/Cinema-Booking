@@ -1,4 +1,3 @@
-// app/api/payments/ecpay/create/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 
@@ -19,9 +18,7 @@ export async function POST(request: NextRequest) {
         const now = new Date();
         const merchantTradeDate = `${now.getFullYear()}/${String(now.getMonth() + 1).padStart(2, '0')}/${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
 
-        // ⚠️ 重要：這裡要用你的 ngrok URL
-        // 請將下面的 URL 替換成你的 ngrok URL
-        const ngrokUrl = 'https://degradedly-pseudoorganic-teena.ngrok-free.dev'; // ← 替換成你的 ngrok URL
+        const ngrokUrl = 'https://degradedly-pseudoorganic-teena.ngrok-free.dev'; 
         
         console.log('Using callback URL:', `${ngrokUrl}/api/payments/ecpay/callback`);
 
@@ -88,7 +85,6 @@ export async function POST(request: NextRequest) {
                 <div class="loading">
                     <div class="spinner"></div>
                     <h2>正在跳轉至綠界付款頁面...</h2>
-                    <p>請稍候...</p>
                     <form id="ecpay-form" method="POST" action="https://payment-stage.ecpay.com.tw/Cashier/AioCheckOut/V5">
                         ${Object.entries(params).map(([key, value]) => 
                             `<input type="hidden" name="${key}" value="${value}" />`
@@ -126,30 +122,30 @@ function generateCheckMacValue(params: any) {
     const hashKey = 'pwFHCqoQZGmho4w6';
     const hashIV = 'EkRm7iFT261dpevs';
 
-    // 依字母排序
-    const sortedKeys = Object.keys(params).sort((a, b) => 
-        a.toLowerCase().localeCompare(b.toLowerCase())
-    );
+    // 依字母排序（區分大小寫）
+    const sortedKeys = Object.keys(params).sort();
 
     // 組合字串
-    let str = `HashKey=${hashKey}`;
+    let queryString = '';
     for (const key of sortedKeys) {
-        str += `&${key}=${params[key]}`;
+        queryString += `&${key}=${params[key]}`;
     }
-    str += `&HashIV=${hashIV}`;
+    
+    // 組成完整字串
+    const rawString = `HashKey=${hashKey}${queryString}&HashIV=${hashIV}`;
 
     // URL encode
-    str = encodeURIComponent(str).toLowerCase()
+    let encodedString = encodeURIComponent(rawString).toLowerCase()
+        .replace(/%20/g, '+')
         .replace(/%2d/g, '-')
         .replace(/%5f/g, '_')
         .replace(/%2e/g, '.')
         .replace(/%21/g, '!')
         .replace(/%2a/g, '*')
         .replace(/%28/g, '(')
-        .replace(/%29/g, ')')
-        .replace(/%20/g, '+');
+        .replace(/%29/g, ')');
 
-    // SHA256
-    const hash = crypto.createHash('sha256').update(str, 'utf8').digest('hex');
+    // 使用 SHA256（綠界測試環境使用 SHA256）
+    const hash = crypto.createHash('sha256').update(encodedString, 'utf8').digest('hex');
     return hash.toUpperCase();
 }

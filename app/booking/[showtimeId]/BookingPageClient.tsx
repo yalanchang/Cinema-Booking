@@ -348,7 +348,6 @@ export default function BookingPageClient({ user }: BookingPageClientProps) {
                             </div>
 
                             <form onSubmit={handleSubmit} className="space-y-4">
-                                {/* 會員資訊顯示（不可編輯） */}
                                 <div>
                                     <label className="block text-gray-300 text-sm font-semibold mb-2 border-b border-gray-700 pb-2">
                                         姓名

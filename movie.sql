@@ -248,14 +248,13 @@ CROSS JOIN (
 ALTER TABLE movies ADD COLUMN trailer_url VARCHAR(500) AFTER poster_url;
 
 UPDATE movies 
-SET trailer_url = 'https://www.youtube.com/watch?v=uYPbbksJxIg' 
-WHERE id = 2;
+SET trailer_url = 'https://www.youtube.com/watch?v=9JU8SEt6R7Q' 
+WHERE id = 3;
 
 UPDATE movies 
 SET poster_url = 'https://i.pinimg.com/736x/d5/9f/d5/d59fd5096759bf1bd158f046e3b7d421.jpg' 
 WHERE id = 2;
 
--- 建立電影照片表
 CREATE TABLE movie_images (
   id INT PRIMARY KEY AUTO_INCREMENT,
   movie_id INT NOT NULL,
@@ -300,7 +299,7 @@ SELECT table_schema, table_name
  WHERE table_name = 'bookings';
 
 -- 參數設定
-SET @start_date      = CURDATE();         -- 起始日
+SET @start_date      = CURDATE();        
 SET @days_to_insert  = 6;               
 SET @movie_id        = 2;
 SET @theater_id      = 1;
@@ -324,7 +323,6 @@ FROM (
     UNION ALL SELECT 5
 ) AS d
 CROSS JOIN (
-    -- 這裡先列出所有可能時間，再用 WHERE 過濾
     SELECT '12:00:00' AS show_time
     UNION ALL SELECT '16:00:00'
     UNION ALL SELECT '19:30:00'
@@ -333,10 +331,7 @@ CROSS JOIN (
 ) AS t
 WHERE
     d.day_offset < @days_to_insert;
-    
--- =====================================================
--- 為現有的 users 資料表新增欄位
--- =====================================================
+
 
 -- 1. 新增性別欄位
 ALTER TABLE `users` 
@@ -375,31 +370,6 @@ CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
 DEFAULT NULL 
 AFTER `district`;
 
--- 4. 新增緊急聯絡人欄位
-ALTER TABLE `users` 
-ADD COLUMN `emergency_contact` VARCHAR(100) 
-CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci 
-DEFAULT NULL 
-AFTER `zip_code`;
-
-ALTER TABLE `users` 
-ADD COLUMN `emergency_phone` VARCHAR(20) 
-CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci 
-DEFAULT NULL 
-AFTER `emergency_contact`;
-
--- 5. 新增偏好設定欄位
-ALTER TABLE `users` 
-ADD COLUMN `preferred_language` ENUM('zh-TW', 'zh-CN', 'en') 
-CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci 
-DEFAULT 'zh-TW' 
-AFTER `emergency_phone`;
-
--- 6. 新增通知設定欄位
-ALTER TABLE `users` 
-ADD COLUMN `newsletter` TINYINT(1) DEFAULT 0 
-AFTER `preferred_language`;
-
 ALTER TABLE `users` 
 ADD COLUMN `sms_notification` TINYINT(1) DEFAULT 0 
 AFTER `newsletter`;
@@ -409,13 +379,12 @@ ALTER TABLE `users`
 ADD COLUMN `last_login_at` DATETIME DEFAULT NULL 
 AFTER `sms_notification`;
 
--- 8. 新增帳號狀態欄位
 ALTER TABLE `users` 
 ADD COLUMN `is_active` TINYINT(1) DEFAULT 1 
 AFTER `last_login_at`;
 
--- 9. 為常用查詢欄位新增索引
 ALTER TABLE `users` ADD INDEX `idx_phone` (`phone`);
 ALTER TABLE `users` ADD INDEX `idx_provider` (`provider`);
 ALTER TABLE `users` ADD INDEX `idx_created_at` (`created_at`);
 ALTER TABLE `users` ADD INDEX `idx_is_active` (`is_active`);
+

@@ -16,12 +16,12 @@ export default async function RootLayout({
   return (
     <html lang="zh-TW">
       <body>
-      <SessionProvider session={session}>
-      <Header />
+        <SessionProvider session={session}>
+          <Header />
 
           {children}
-          </SessionProvider>
-          <Footer />
+        </SessionProvider>
+        <Footer />
       </body>
     </html>
   );

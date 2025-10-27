@@ -8,7 +8,7 @@ interface LoadingSpinnerProps {
     fullScreen = true 
   }: LoadingSpinnerProps) {
     return (
-      <div className={`flex items-center justify-center ${
+      <div className={`w-full flex items-center justify-center ${
         fullScreen ? 'min-h-screen bg-neutral-900' : 'py-20'
       }`}>
         <div className="text-center">

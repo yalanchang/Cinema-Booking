@@ -5,23 +5,18 @@ const pool = mysql.createPool({
   user: process.env.DB_USER || 'root',
   password: process.env.DB_PASSWORD || '',
   database: process.env.DB_NAME || 'movie_booking',
-  port: parseInt(process.env.DB_PORT || '3306'),
   waitForConnections: true,
   connectionLimit: 10,
-  maxIdle: 10,
-  idleTimeout: 60000,
   queueLimit: 0,
-  enableKeepAlive: true,
-  keepAliveInitialDelay: 0
 });
 
 pool.getConnection()
   .then(connection => {
-    console.log('✅ Database connected successfully');
+    console.log('✅');
     connection.release();
   })
   .catch(err => {
-    console.error('❌ Database connection failed:', err.message);
+    console.error('❌ Database failed:', err.message);
   });
 
 export default pool;

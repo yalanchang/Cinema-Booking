@@ -70,13 +70,19 @@ function generateCheckMacValue(params: any): string {
     const hashKey = process.env.ECPAY_HASH_KEY || 'pwFHCqoQZGmho4w6';
     const hashIV = process.env.ECPAY_HASH_IV || 'EkRm7iFT261dpevs';
     
+    // 依字母排序
     const sortedKeys = Object.keys(params).sort();
-    const paramString = sortedKeys
-        .map(key => `${key}=${params[key]}`)
-        .join('&');
     
-    const rawString = `HashKey=${hashKey}&${paramString}&HashIV=${hashIV}`;
-    const encodedString = encodeURIComponent(rawString)
+    // 組合字串
+    let queryString = '';
+    for (const key of sortedKeys) {
+        queryString += `&${key}=${params[key]}`;
+    }
+    
+    const rawString = `HashKey=${hashKey}${queryString}&HashIV=${hashIV}`;
+    
+    // URL encode
+    let encodedString = encodeURIComponent(rawString).toLowerCase()
         .replace(/%20/g, '+')
         .replace(/%2d/g, '-')
         .replace(/%5f/g, '_')
@@ -84,9 +90,9 @@ function generateCheckMacValue(params: any): string {
         .replace(/%21/g, '!')
         .replace(/%2a/g, '*')
         .replace(/%28/g, '(')
-        .replace(/%29/g, ')')
-        .toLowerCase();
+        .replace(/%29/g, ')');
     
+    // 使用 SHA256
     return crypto
         .createHash('sha256')
         .update(encodedString)
