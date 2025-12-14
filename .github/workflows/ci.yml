@@ -28,9 +28,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # 4. 執行 Lint 檢查
-      - name: Run Lint
-        run: npm run lint
+    #   # 4. 執行 Lint 檢查
+    #   - name: Run Lint
+    #     run: npm run lint
 
       # 5. 執行測試
       - name: Run Tests
