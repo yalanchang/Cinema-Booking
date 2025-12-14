@@ -5,6 +5,9 @@ import FacebookProvider from 'next-auth/providers/facebook';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import pool from '@/lib/db';
 import { RowDataPacket, ResultSetHeader } from 'mysql2';
+import jwt from 'jsonwebtoken';
+
+const JWT_SECRET = process.env.NEXTAUTH_SECRET || 'your-secret-key';
 
 export interface UserPayload {
   id: number;
@@ -274,5 +277,15 @@ export async function verifyPassword(password: string, hashedPassword: string): 
   return bcrypt.compare(password, hashedPassword);
 }
 
+export function generateToken(payload: any): string {
+  return jwt.sign(payload, JWT_SECRET, { expiresIn: '7d' });
+}
 
+export function verifyToken(token: string): any {
+  try {
+      return jwt.verify(token, JWT_SECRET);
+  } catch {
+      return null;
+  }
+}
   

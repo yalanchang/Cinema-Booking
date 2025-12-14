@@ -3,10 +3,10 @@ import mysql from 'mysql2/promise';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }  
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = await params;  
+    const { id } = await params;
     
     if (!id) {
       return NextResponse.json({ success: false, error: '缺少電影 ID' }, { status: 400 });
