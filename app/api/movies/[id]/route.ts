@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import mysql from 'mysql2/promise';
 
 export async function GET(
-  request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
