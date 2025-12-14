@@ -8,8 +8,7 @@
     "build": "next build ",
     "start": "next start",
     "lint": "next lint",
-    "test": "echo \"No tests yet\" && exit 0"  
-
+    "test": "echo \"No tests yet\" && exit 0"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^7.1.0",
@@ -36,6 +35,8 @@
     "@types/nodemailer": "^7.0.2",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "eslint": "9.39.2",
+    "eslint-config-next": "16.0.10",
     "tailwindcss": "^4",
     "typescript": "^5"
   }
