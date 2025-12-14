@@ -1,0 +1,40 @@
+name: CI
+
+# 什麼時候觸發
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. 取得程式碼
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # 2. 設定 Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      # 3. 安裝依賴
+      - name: Install dependencies
+        run: npm ci
+
+      # 4. 執行 Lint 檢查
+      - name: Run Lint
+        run: npm run lint
+
+      # 5. 執行測試
+      - name: Run Tests
+        run: npm test
+
+      # 6. 建置專案
+      - name: Build
+        run: npm run build

@@ -56,7 +56,6 @@ export default function LoginPage() {
 
         try {
             if (isLogin) {
-                // ✅ 使用 NextAuth 登入
                 const result = await signIn('credentials', {
                     email: formData.email,
                     password: formData.password,
@@ -70,7 +69,6 @@ export default function LoginPage() {
                     router.refresh();
                 }
             } else {
-                // ✅ 一般註冊
                 const response = await fetch('/api/auth/register', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
