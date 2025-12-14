@@ -17,10 +17,8 @@ export async function POST(request: NextRequest) {
         // 格式化時間
         const now = new Date();
         const merchantTradeDate = `${now.getFullYear()}/${String(now.getMonth() + 1).padStart(2, '0')}/${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
-
         const ngrokUrl = 'https://degradedly-pseudoorganic-teena.ngrok-free.dev'; 
         
-        console.log('Using callback URL:', `${ngrokUrl}/api/payments/ecpay/callback`);
 
         // 綠界參數
         const params: any = {
@@ -35,9 +33,7 @@ export async function POST(request: NextRequest) {
             EncryptType: 1,
             
             ReturnURL: `${ngrokUrl}/api/payments/ecpay/callback`,
-            
             ClientBackURL: `http://localhost:3000/booking/confirmation/${bookingId}?payment=success`,
-            
             CustomField1: bookingId
         };
 
@@ -45,7 +41,6 @@ export async function POST(request: NextRequest) {
         const checkMacValue = generateCheckMacValue(params);
         params.CheckMacValue = checkMacValue;
 
-        // 建立 HTML 表單頁面
         const html = `
             <!DOCTYPE html>
             <html>

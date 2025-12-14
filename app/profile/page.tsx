@@ -23,6 +23,15 @@ export default function ProfilePage() {
         newsletter: false,
         sms_notification: false,
     });
+    const getGenderDisplay = (gender: string) => {
+    const genderMap: { [key: string]: string } = {
+        'male': '男性',
+        'female': '女性',
+        'other': '其他',
+        'prefer_not_to_say': '不願透露',
+    };
+    return genderMap[gender] || gender || '未設定';
+};
     const [isSaving, setIsSaving] = useState(false);
     const [message, setMessage] = useState({ type: '', text: '' });
     const [avatarFile, setAvatarFile] = useState<File | null>(null);
@@ -99,7 +108,6 @@ export default function ProfilePage() {
                 return;
             }
 
-            // 文件大小（限制 5MB）
             if (file.size > 5 * 1024 * 1024) {
                 setMessage({ type: 'error', text: '圖片大小不能超過 5MB' });
                 return;
@@ -156,7 +164,7 @@ export default function ProfilePage() {
             const birthdate = formData.birthdate ? formData.birthdate : (data.user.birthdate?.split('T')[0] || '');
             const gender = formData.gender || data.user.gender || '';
 
-            console.log('更新數據:', { gender, birthdate });  // ← 調試用
+            console.log('更新數據:', { gender, birthdate }); 
 
             await updateSession({
                 user: {
@@ -460,7 +468,7 @@ export default function ProfilePage() {
                                         </div>
                                         <div>
                                             <p className="text-gray-400 text-sm mb-1">性別</p>
-                                            <p className="text-white font-semibold">{formData.gender || '未設定'}</p>
+                                            <p className="text-white font-semibold">{getGenderDisplay(formData.gender)}</p>
                                         </div>
                                         <div>
                                             <p className="text-gray-400 text-sm mb-1">生日</p>

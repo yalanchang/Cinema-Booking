@@ -35,6 +35,7 @@ export default function ConfirmationPage() {
     const [error, setError] = useState<string | null>(null);
     const [paymentLoading, setPaymentLoading] = useState(false);
     const paymentStatus = searchParams.get('payment');
+    
 
 
     useEffect(() => {
@@ -111,27 +112,22 @@ export default function ConfirmationPage() {
                 bookingInput.value = String(booking?.id);
                 form.appendChild(bookingInput);
                 
-                // 建立隱藏的 input 欄位 - amount
                 const amountInput = document.createElement('input');
                 amountInput.type = 'hidden';
                 amountInput.name = 'amount';
                 amountInput.value = String(amount);
                 form.appendChild(amountInput);
                 
-                // 建立隱藏的 input 欄位 - method
                 const methodInput = document.createElement('input');
                 methodInput.type = 'hidden';
                 methodInput.name = 'method';
                 methodInput.value = method;
                 form.appendChild(methodInput);
                 
-                // 將表單加入頁面並提交
                 document.body.appendChild(form);
                 form.submit();
-                // 重要：不要移除表單或設定 loading = false，因為頁面會跳轉
                 
             } else {
-                // 其他付款方式（LINE Pay、信用卡等）- 保持原本的邏輯
                 const response = await fetch('/api/payments/create', {
                     method: 'POST',
                     headers: {

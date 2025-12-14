@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
                 connection.release();
             }
         } else {
-            console.log('款失敗，RtnCode:', data.RtnCode);
+            console.log('付款失敗，RtnCode:', data.RtnCode);
         }
         
         return new NextResponse('0|Payment Failed', { status: 200 });
@@ -59,14 +59,11 @@ function generateCheckMacValue(data: any) {
     const hashKey = 'pwFHCqoQZGmho4w6';
     const hashIV = 'EkRm7iFT261dpevs';
     
-    // 複製數據以避免修改原始對象
     const dataCopy = { ...data };
     delete dataCopy.CheckMacValue;
     
-    // 依字母排序（區分大小寫）
     const sortedKeys = Object.keys(dataCopy).sort();
 
-    // 組合字串
     let queryString = '';
     for (const key of sortedKeys) {
         queryString += `&${key}=${dataCopy[key]}`;
