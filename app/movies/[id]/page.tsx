@@ -341,11 +341,8 @@ export default function MoviePage() {
           </>
         )}
       </main>
-      {carouselSlides.length > 0 ? (
         <MovieGallery slides={carouselSlides} autoPlayInterval={5000} />
-      ) : (
-        <p>載入中...</p>
-      )}
+    
       <RecommendedMovies currentMovieId={movieId} />
       {isTrailerOpen && videoId && (
         <div

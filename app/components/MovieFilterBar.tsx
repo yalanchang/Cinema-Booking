@@ -1,4 +1,3 @@
-// components/MovieFilterBar.tsx
 'use client';
 
 interface MovieFilterBarProps {

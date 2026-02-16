@@ -103,78 +103,52 @@ export default function Home() {
     }
   };
 
-  // 產生未來7天的日期選項
-  const getDateOptions = () => {
-    const dates = [];
-    const today = new Date();
-    for (let i = 0; i < 7; i++) {
-      const date = new Date(today);
-      date.setDate(today.getDate() + i);
-      const dateString = date.toISOString().split('T')[0];
-      dates.push(dateString);
-    }
 
-    return dates;
-  };
+const getFilteredMovies = () => {
+  if (!selectedDate && selectedTimeSlot === 'all') {
+    return movies;
+  }
 
-  const formatDateDisplay = (dateString: string) => {
-    const parts = dateString.split('-');
-    const year = parseInt(parts[0]);
-    const month = parseInt(parts[1]) - 1;
-    const day = parseInt(parts[2]);
 
-    const date = new Date(year, month, day);
-    const days = ['日', '一', '二', '三', '四', '五', '六'];
+  const filteredShowtimes = allShowtimes.filter(showtime => {
+    let matchDate = true;
+    let matchTime = true;
 
-    const today = new Date();
-    const isToday = date.toDateString() === today.toDateString();
+    if (selectedDate) {
+      const showtimeDate = new Date(showtime.show_date).toISOString().split('T')[0];
+      const filterDate = selectedDate.split('T')[0];
+      matchDate = showtimeDate === filterDate;
+      
+          }
 
-    if (isToday) {
-      return `今天 ${month + 1}/${day} (${days[date.getDay()]})`;
-    }
-
-    return `${month + 1}/${day} (${days[date.getDay()]})`;
-  };
-  // 篩選電影（根據日期和時段）
-  const getFilteredMovies = () => {
-    if (!selectedDate && selectedTimeSlot === 'all') {
-      return movies;
-    }
-    // 篩選符合條件的場次
-    const filteredShowtimes = allShowtimes.filter(showtime => {
-      let matchDate = true;
-      let matchTime = true;
-      // 日期篩選
-      if (selectedDate) {
-        matchDate = showtime.show_date === selectedDate;
+    if (selectedTimeSlot !== 'all') {
+      const hour = parseInt(showtime.show_time.split(':')[0]);
+      switch (selectedTimeSlot) {
+        case 'morning':
+          matchTime = hour >= 10 && hour < 12;
+          break;
+        case 'afternoon':
+          matchTime = hour >= 12 && hour < 18;
+          break;
+        case 'evening':
+          matchTime = hour >= 18 && hour < 22;
+          break;
+        case 'night':
+          matchTime = hour >= 22 || hour < 2;
+          break;
       }
-      // 時段篩選
-      if (selectedTimeSlot !== 'all') {
-        const hour = parseInt(showtime.show_time.split(':')[0]);
-        switch (selectedTimeSlot) {
-          case 'morning': // 早場 (10:00-12:00)
-            matchTime = hour >= 10 && hour < 12;
-            break;
-          case 'afternoon': // 午場 (12:00-18:00)
-            matchTime = hour >= 12 && hour < 18;
-            break;
-          case 'evening': // 晚場 (18:00-22:00)
-            matchTime = hour >= 18 && hour < 22;
-            break;
-          case 'night': // 深夜場 (22:00-02:00)
-            matchTime = hour >= 22 || hour < 2;
-            break;
-        }
-      }
-      return matchDate && matchTime;
-    });
-    // 取得有符合場次的電影ID
-    const movieIdsWithShowtimes = new Set(
-      filteredShowtimes.map(st => st.movie_id)
-    );
-    // 只返回有符合場次的電影
-    return movies.filter(movie => movieIdsWithShowtimes.has(movie.id));
-  };
+    }
+
+    return matchDate && matchTime;
+  });
+
+
+  const movieIdsWithShowtimes = new Set(
+    filteredShowtimes.map(st => st.movie_id)
+  );
+
+  return movies.filter(movie => movieIdsWithShowtimes.has(movie.id));
+};
 
   const filteredMovies = getFilteredMovies();
   const handleClearFilters = () => {

@@ -143,7 +143,6 @@ INSERT INTO theaters (name, capacity) VALUES
 ('3號廳 (標準廳)', 80),
 ('4號廳 (VIP廳)', 60);
 
--- 為每個影廳建立座位
 -- 1號廳: 10排 x 10座位 = 100座位
 INSERT INTO seats (theater_id, row_label, seat_number)
 SELECT 1, row_label, seat_number
@@ -291,17 +290,14 @@ ALTER TABLE bookings
 ADD COLUMN payment_method VARCHAR(50),
 ADD COLUMN payment_transaction_id VARCHAR(255),
 ADD COLUMN payment_status ENUM('pending', 'paid', 'failed', 'refunded') DEFAULT 'pending';
--- 查看欄位名稱
 
--- 查看 public schema 的表
 SELECT table_schema, table_name
   FROM information_schema.tables
  WHERE table_name = 'bookings';
 
--- 參數設定
 SET @start_date      = CURDATE();        
 SET @days_to_insert  = 6;               
-SET @movie_id        = 2;
+SET @movie_id        = 5;
 SET @theater_id      = 1;
 SET @price           = 280;
 SET @available_seats = 50;

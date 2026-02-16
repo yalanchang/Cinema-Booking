@@ -23,7 +23,7 @@ export default function LoginPage() {
     }>({});
     const [loading, setLoading] = useState(false);
 
-    // ✅ Google 登入
+    // Google 登入
     const handleGoogleLogin = async () => {
         try {
             setLoading(true);
@@ -36,7 +36,7 @@ export default function LoginPage() {
         }
     };
 
-    // ✅ Facebook 登入
+    // Facebook 登入
     const handleFacebookLogin = async () => {
         try {
             setLoading(true);

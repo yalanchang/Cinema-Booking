@@ -10,282 +10,332 @@ import jwt from 'jsonwebtoken';
 const JWT_SECRET = process.env.NEXTAUTH_SECRET || 'your-secret-key';
 
 export interface UserPayload {
-  id: number;
-  email: string;
-  name: string;
-  phone?: string; 
+    id: number;
+    email: string;
+    name: string;
+    phone?: string;
 
 }
 export const authOptions: NextAuthOptions = {
-  providers: [
-      GoogleProvider({
-          clientId: process.env.GOOGLE_CLIENT_ID!,
-          clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-          authorization: {
-              params: {
-                  scope: "openid email profile",
-              },
-          },
-      }),
+    providers: [
+        GoogleProvider({
+            clientId: process.env.GOOGLE_CLIENT_ID!,
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+            authorization: {
+                params: {
+                    scope: "openid email profile",
+                },
+            },
+        }),
 
-      FacebookProvider({
-          clientId: process.env.FACEBOOK_CLIENT_ID!,
-          clientSecret: process.env.FACEBOOK_CLIENT_SECRET!,
-       
-      }),
+        FacebookProvider({
+            clientId: process.env.FACEBOOK_CLIENT_ID!,
+            clientSecret: process.env.FACEBOOK_CLIENT_SECRET!,
 
-      CredentialsProvider({
-          name: 'Credentials',
-          credentials: {
-              email: { label: "Email", type: "email" },
-              password: { label: "Password", type: "password" }
-          },
-          async authorize(credentials) {
-              if (!credentials?.email || !credentials?.password) {
-                  throw new Error('請輸入 Email 和密碼');
-              }
+        }),
 
-              const connection = await pool.getConnection();
-              try {
-                  const [users] = await connection.execute<RowDataPacket[]>(
-                      'SELECT * FROM users WHERE email = ? AND provider = "local"',
-                      [credentials.email]
-                  );
+        CredentialsProvider({
+            name: 'Credentials',
+            credentials: {
+                email: { label: "Email", type: "email" },
+                password: { label: "Password", type: "password" }
+            },
+            async authorize(credentials) {
+                if (!credentials?.email || !credentials?.password) {
+                    throw new Error('請輸入 Email 和密碼');
+                }
 
-                  if (users.length === 0) {
-                      throw new Error('Email 或密碼錯誤');
-                  }
+                const connection = await pool.getConnection();
+                try {
+                    const [users] = await connection.execute<RowDataPacket[]>(
+                        'SELECT * FROM users WHERE email = ? AND provider = "local"',
+                        [credentials.email]
+                    );
 
-                  const user = users[0];
+                    if (users.length === 0) {
+                        throw new Error('Email 或密碼錯誤');
+                    }
 
-                  const isValid = await verifyPassword(credentials.password, user.password);
-                  if (!isValid) {
-                      throw new Error('Email 或密碼錯誤');
-                  }
+                    const user = users[0];
 
-                  if (!user.email_verified) {
-                      throw new Error('請先驗證您的電子郵件。請檢查您的信箱。');
-                  }
+                    const isValid = await verifyPassword(credentials.password, user.password);
+                    if (!isValid) {
+                        throw new Error('Email 或密碼錯誤');
+                    }
 
-                  return {
-                      id: user.id.toString(),
-                      email: user.email,
-                      name: user.name,
-                      image: user.avatar,
-                  };
-              } finally {
-                  connection.release();
-              }
-          }
-      })
-  ],
+                    if (!user.email_verified) {
+                        throw new Error('請先驗證您的電子郵件。請檢查您的信箱。');
+                    }
 
-  callbacks: {
-      async signIn({ user, account, profile }) {
-          if (!account) {
-              return false;
-          }
-          try {
-              if (account.provider === 'google' || account.provider === 'facebook') {
-                  const connection = await pool.getConnection();
-                  try {
-                      const [existingUsers] = await connection.execute<RowDataPacket[]>(
-                          'SELECT * FROM users WHERE provider = ? AND provider_id = ?',
-                          [account.provider, account.providerAccountId]
-                      );
+                    return {
+                        id: user.id.toString(),
+                        email: user.email,
+                        name: user.name,
+                        image: user.avatar,
+                    };
+                } finally {
+                    connection.release();
+                }
+            }
+        })
+    ],
 
-                      if (existingUsers.length > 0) {
-                          console.log('用戶已存在, ID:', existingUsers[0].id);
+    callbacks: {
+        async signIn({ user, account, profile }) {
+            if (!account) {
+                return false;
+            }
+            try {
+                if (account.provider === 'google' || account.provider === 'facebook') {
+                    const connection = await pool.getConnection();
+                    try {
+                        const [existingUsers] = await connection.execute<RowDataPacket[]>(
+                            'SELECT * FROM users WHERE provider = ? AND provider_id = ?',
+                            [account.provider, account.providerAccountId]
+                        );
 
-                          // 如果用戶有 email，更新它
-                          if (user.email) {
-                              await connection.execute(
-                                  'UPDATE users SET name = ?, email = ?, avatar = ? WHERE id = ?',
-                                  [user.name || existingUsers[0].name, user.email, user.image || existingUsers[0].avatar, existingUsers[0].id]
-                              );
-                          } else {
-                              await connection.execute(
-                                  'UPDATE users SET name = ?, avatar = ? WHERE id = ?',
-                                  [user.name || existingUsers[0].name, user.image || existingUsers[0].avatar, existingUsers[0].id]
-                              );
-                          }
+                        if (existingUsers.length > 0) {
+                            console.log('用戶已存在, ID:', existingUsers[0].id);
 
-                          return true;
-                      }
-                      
-                      const userEmail = user.email || `${account.providerAccountId}@${account.provider}.social`;
-                      
-                      const [result] = await connection.execute<ResultSetHeader>(
-                          `INSERT INTO users 
+                            // 如果用戶有 email，更新它
+                            if (user.email) {
+                                await connection.execute(
+                                    'UPDATE users SET name = ?,  avatar = ? WHERE id = ?',
+                                    [user.name || existingUsers[0].name, user.image || existingUsers[0].avatar, existingUsers[0].id]
+                                );
+                            }
+
+                            return true;
+                        }
+                        if (user.email) {
+                            const [emailCheck] = await connection.execute<RowDataPacket[]>(
+                                'SELECT id FROM users WHERE email = ?',
+                                [user.email]
+                            );
+
+                            if (emailCheck.length > 0) {
+                                console.error('Email 已被使用:', user.email);
+
+                                const userEmail = `${account.providerAccountId}@${account.provider}.social`;
+
+                                const [result] = await connection.execute<ResultSetHeader>(
+                                    `INSERT INTO users 
+                             (name, email, provider, provider_id, email_verified, avatar, password) 
+                             VALUES (?, ?, ?, ?, TRUE, ?, NULL)`,
+                                    [
+                                        user.name || `${account.provider} User`,
+                                        userEmail,
+                                        account.provider,
+                                        account.providerAccountId,
+                                        user.image || null
+                                    ]
+                                );
+
+                                console.log('新用戶已建立 (使用替代 email), ID:', result.insertId);
+                                return true;
+                            }
+                        }
+                        const userEmail = user.email || `${account.providerAccountId}@${account.provider}.social`;
+
+                        const [result] = await connection.execute<ResultSetHeader>(
+                            `INSERT INTO users 
                            (name, email, provider, provider_id, email_verified, avatar, password) 
                            VALUES (?, ?, ?, ?, TRUE, ?, NULL)`,
-                          [
-                              user.name || `${account.provider} User`,
-                              userEmail,
-                              account.provider,
-                              account.providerAccountId,
-                              user.image || null
-                          ]
-                      );
+                            [
+                                user.name || `${account.provider} User`,
+                                userEmail,
+                                account.provider,
+                                account.providerAccountId,
+                                user.image || null
+                            ]
+                        );
 
-                      console.log('新用戶已建立, ID:', result.insertId);
-                      return true;
-                  } finally {
-                      connection.release();
-                  }
-              }
+                        console.log('新用戶已建立, ID:', result.insertId);
+                        return true;
+                    } catch (error: any) {
+                        // 捕获重复 email 错误
+                        if (error.code === 'ER_DUP_ENTRY') {
+                            console.error('重复的 email 错误:', error.sqlMessage);
+                            // 可以尝试使用替代 email
+                            const userEmail = `${account.providerAccountId}@${account.provider}.social`;
 
-              return true;
-          } catch (error) {
-              console.error('登入錯誤:', error);
-              return false;
-          }
-      },
+                            try {
+                                const [result] = await connection.execute<ResultSetHeader>(
+                                    `INSERT INTO users 
+                                     (name, email, provider, provider_id, email_verified, avatar, password) 
+                                     VALUES (?, ?, ?, ?, TRUE, ?, NULL)`,
+                                    [
+                                        user.name || `${account.provider} User`,
+                                        userEmail,
+                                        account.provider,
+                                        account.providerAccountId,
+                                        user.image || null
+                                    ]
+                                );
+                                console.log('使用替代 email 建立新用戶, ID:', result.insertId);
+                                return true;
+                            } catch (retryError) {
+                                console.error('重试建立用户失败:', retryError);
+                                return false;
+                            }
+                        }
+                        throw error;
+                    } finally {
+                        connection.release();
+                    }
+                }
 
-      async jwt({ token, user, account }) {
-          if (account) {
-              const connection = await pool.getConnection();
-              try {
-                  const [users] = await connection.execute<RowDataPacket[]>(
-                      'SELECT id, name, email, phone, gender, DATE_FORMAT(birthdate, "%Y-%m-%d") as birthdate, address, city, district, zip_code, avatar, provider FROM users WHERE provider = ? AND provider_id = ?',
-                      [account.provider, account.providerAccountId]
-                  );
+                return true;
+            } catch (error) {
+                console.error('登入錯誤:', error);
+                return false;
+            }
+        },
 
-                  if (users.length > 0) {
-                      const dbUser = users[0];
-                      token.id = dbUser.id;
-                      token.email = dbUser.email;
-                      token.name = dbUser.name;
-                      token.phone = dbUser.phone;
-                      token.gender = dbUser.gender;
-                      token.birthdate = dbUser.birthdate;
-                      token.address = dbUser.address;
-                      token.city = dbUser.city;
-                      token.district = dbUser.district;
-                      token.zip_code = dbUser.zip_code;
-                      token.provider = dbUser.provider;
-                      token.picture = dbUser.avatar;
-                  }
-              } finally {
-                  connection.release();
-              }
-          }
-          else if (token.email) {
-              const connection = await pool.getConnection();
-              try {
-                  const [users] = await connection.execute<RowDataPacket[]>(
-                      'SELECT id, name, email, phone, gender, DATE_FORMAT(birthdate, "%Y-%m-%d") as birthdate, address, city, district, zip_code, avatar, provider FROM users WHERE email = ?',
-                      [token.email]
-                  );
+        async jwt({ token, user, account }) {
+            if (account) {
+                const connection = await pool.getConnection();
+                try {
+                    const [users] = await connection.execute<RowDataPacket[]>(
+                        'SELECT id, name, email, phone, gender, DATE_FORMAT(birthdate, "%Y-%m-%d") as birthdate, address, city, district, zip_code, avatar, provider FROM users WHERE provider = ? AND provider_id = ?',
+                        [account.provider, account.providerAccountId]
+                    );
 
-                  if (users.length > 0) {
-                      const dbUser = users[0];
-                      token.id = dbUser.id;
-                      token.name = dbUser.name;
-                      token.email = dbUser.email;
-                      token.phone = dbUser.phone;
-                      token.gender = dbUser.gender;
-                      token.birthdate = dbUser.birthdate;
-                      token.address = dbUser.address;
-                      token.city = dbUser.city;
-                      token.district = dbUser.district;
-                      token.zip_code = dbUser.zip_code;
-                      token.provider = dbUser.provider;
-                      token.picture = dbUser.avatar;
-                  }
-              } finally {
-                  connection.release();
-              }
-          }
-          return token;
-      },
+                    if (users.length > 0) {
+                        const dbUser = users[0];
+                        token.id = dbUser.id;
+                        token.email = dbUser.email;
+                        token.name = dbUser.name;
+                        token.phone = dbUser.phone;
+                        token.gender = dbUser.gender;
+                        token.birthdate = dbUser.birthdate;
+                        token.address = dbUser.address;
+                        token.city = dbUser.city;
+                        token.district = dbUser.district;
+                        token.zip_code = dbUser.zip_code;
+                        token.provider = dbUser.provider;
+                        token.picture = dbUser.avatar;
+                    }
+                } finally {
+                    connection.release();
+                }
+            }
+            else if (token.email) {
+                const connection = await pool.getConnection();
+                try {
+                    const [users] = await connection.execute<RowDataPacket[]>(
+                        'SELECT id, name, email, phone, gender, DATE_FORMAT(birthdate, "%Y-%m-%d") as birthdate, address, city, district, zip_code, avatar, provider FROM users WHERE email = ?',
+                        [token.email]
+                    );
 
-      async session({ session, token }) {
-          if (session.user) {
-              session.user.email = token.email as string;
-              session.user.name = token.name as string;
-              session.user.image = token.picture as string;
-              session.user.id = token.id as string;
-              session.user.phone = token.phone as string;
-              session.user.provider = token.provider as string;
-              (session.user as any).gender = token.gender;
-              (session.user as any).birthdate = token.birthdate;
-              (session.user as any).address = token.address;
-              (session.user as any).city = token.city;
-              (session.user as any).district = token.district;
-              (session.user as any).zip_code = token.zip_code;
-          }
-          return session;
-      },
+                    if (users.length > 0) {
+                        const dbUser = users[0];
+                        token.id = dbUser.id;
+                        token.name = dbUser.name;
+                        token.email = dbUser.email;
+                        token.phone = dbUser.phone;
+                        token.gender = dbUser.gender;
+                        token.birthdate = dbUser.birthdate;
+                        token.address = dbUser.address;
+                        token.city = dbUser.city;
+                        token.district = dbUser.district;
+                        token.zip_code = dbUser.zip_code;
+                        token.provider = dbUser.provider;
+                        token.picture = dbUser.avatar;
+                    }
+                } finally {
+                    connection.release();
+                }
+            }
+            return token;
+        },
 
-      async redirect({ url, baseUrl }) {
-          if (url.startsWith(baseUrl)) return url;
-          if (url.startsWith('/')) return `${baseUrl}${url}`;
-          return baseUrl;
-      },
-  },
+        async session({ session, token }) {
+            if (session.user) {
+                session.user.email = token.email as string;
+                session.user.name = token.name as string;
+                session.user.image = token.picture as string;
+                session.user.id = token.id as string;
+                session.user.phone = token.phone as string;
+                session.user.provider = token.provider as string;
+                (session.user as any).gender = token.gender;
+                (session.user as any).birthdate = token.birthdate;
+                (session.user as any).address = token.address;
+                (session.user as any).city = token.city;
+                (session.user as any).district = token.district;
+                (session.user as any).zip_code = token.zip_code;
+            }
+            return session;
+        },
 
-  pages: {
-      signIn: '/login',
-      error: '/login',
-  },
+        async redirect({ url, baseUrl }) {
+            if (url.startsWith(baseUrl)) return url;
+            if (url.startsWith('/')) return `${baseUrl}${url}`;
+            return baseUrl;
+        },
+    },
 
-  session: {
-      strategy: 'jwt',
-  },
+    pages: {
+        signIn: '/login',
+        error: '/login',
+    },
+
+    session: {
+        strategy: 'jwt',
+    },
 };
 
 export async function getCurrentUser(): Promise<UserPayload | null> {
     try {
-      const session = await getServerSession(authOptions);
-  
-      if (!session || !session.user?.email) {
-        return null;
-      }
-  
-      // 從資料庫查詢完整的使用者資料
-      const [users] = await pool.query<RowDataPacket[]>(
-        'SELECT id, name, email, phone FROM users WHERE email = ?',
-        [session.user.email]
-      );
-  
-      if (users.length === 0) {
-        return null;
-      }
-  
-      const user = users[0];
-  
-      return {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        phone: user.phone || null
-      };
+        const session = await getServerSession(authOptions);
+
+        if (!session || !session.user?.email) {
+            return null;
+        }
+
+        // 從資料庫查詢完整的使用者資料
+        const [users] = await pool.query<RowDataPacket[]>(
+            'SELECT id, name, email, phone FROM users WHERE email = ?',
+            [session.user.email]
+        );
+
+        if (users.length === 0) {
+            return null;
+        }
+
+        const user = users[0];
+
+        return {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            phone: user.phone || null
+        };
     } catch (error) {
-      console.error('取得使用者錯誤:', error);
-      return null;
+        console.error('取得使用者錯誤:', error);
+        return null;
     }
-  }
-  
+}
+
 // 加密密碼
 export async function hashPassword(password: string): Promise<string> {
-  return bcrypt.hash(password, 10);
+    return bcrypt.hash(password, 10);
 }
 
 // 驗證密碼
 export async function verifyPassword(password: string, hashedPassword: string): Promise<boolean> {
-  return bcrypt.compare(password, hashedPassword);
+    return bcrypt.compare(password, hashedPassword);
 }
 
 export function generateToken(payload: any): string {
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: '7d' });
+    return jwt.sign(payload, JWT_SECRET, { expiresIn: '7d' });
 }
 
 export function verifyToken(token: string): any {
-  try {
-      return jwt.verify(token, JWT_SECRET);
-  } catch {
-      return null;
-  }
+    try {
+        return jwt.verify(token, JWT_SECRET);
+    } catch {
+        return null;
+    }
 }
-  
+
