@@ -46,7 +46,6 @@ interface UpdateProfileRequest {
     newPassword?: string;
 }
 
-// 資料庫連線
 async function getConnection(): Promise<mysql.Connection> {
     const connection = await mysql.createConnection({
         host: process.env.DB_HOST || 'localhost',
@@ -249,7 +248,6 @@ export async function PUT(request: NextRequest) {
                 smsNotification
             ];
 
-            // 如果有新頭像，加入更新
             if (avatarUrl) {
                 updateQuery += ', avatar = ?';
                 params.push(avatarUrl);

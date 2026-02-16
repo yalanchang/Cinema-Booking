@@ -93,54 +93,52 @@ export const authOptions: NextAuthOptions = {
                             'SELECT * FROM users WHERE provider = ? AND provider_id = ?',
                             [account.provider, account.providerAccountId]
                         );
-
+        
                         if (existingUsers.length > 0) {
                             console.log('用戶已存在, ID:', existingUsers[0].id);
-
-                            // 如果用戶有 email，更新它
-                            if (user.email) {
-                                await connection.execute(
-                                    'UPDATE users SET name = ?,  avatar = ? WHERE id = ?',
-                                    [user.name || existingUsers[0].name, user.image || existingUsers[0].avatar, existingUsers[0].id]
-                                );
-                            }
-
+        
+                            await connection.execute(
+                                'UPDATE users SET name = ?, avatar = ? WHERE id = ?',
+                                [
+                                    user.name || existingUsers[0].name, 
+                                    user.image || existingUsers[0].avatar, 
+                                    existingUsers[0].id
+                                ]
+                            );
+        
                             return true;
                         }
+        
                         if (user.email) {
-                            const [emailCheck] = await connection.execute<RowDataPacket[]>(
-                                'SELECT id FROM users WHERE email = ?',
+                            const [emailUsers] = await connection.execute<RowDataPacket[]>(
+                                'SELECT * FROM users WHERE email = ?',
                                 [user.email]
                             );
-
-                            if (emailCheck.length > 0) {
-                                console.error('Email 已被使用:', user.email);
-
-                                const userEmail = `${account.providerAccountId}@${account.provider}.social`;
-
-                                const [result] = await connection.execute<ResultSetHeader>(
-                                    `INSERT INTO users 
-                             (name, email, provider, provider_id, email_verified, avatar, password) 
-                             VALUES (?, ?, ?, ?, TRUE, ?, NULL)`,
+        
+                            if (emailUsers.length > 0) {
+                                console.log('Email 已存在，關聯 OAuth 帳號到用户:', emailUsers[0].id);
+                                
+                                await connection.execute(
+                                    'UPDATE users SET provider = ?, provider_id = ?, name = ?, avatar = ? WHERE id = ?',
                                     [
-                                        user.name || `${account.provider} User`,
-                                        userEmail,
                                         account.provider,
                                         account.providerAccountId,
-                                        user.image || null
+                                        user.name || emailUsers[0].name,
+                                        user.image || emailUsers[0].avatar,
+                                        emailUsers[0].id
                                     ]
                                 );
-
-                                console.log('新用戶已建立 (使用替代 email), ID:', result.insertId);
+        
                                 return true;
                             }
                         }
+        
                         const userEmail = user.email || `${account.providerAccountId}@${account.provider}.social`;
-
+                        
                         const [result] = await connection.execute<ResultSetHeader>(
                             `INSERT INTO users 
-                           (name, email, provider, provider_id, email_verified, avatar, password) 
-                           VALUES (?, ?, ?, ?, TRUE, ?, NULL)`,
+                             (name, email, provider, provider_id, email_verified, avatar, password) 
+                             VALUES (?, ?, ?, ?, TRUE, ?, NULL)`,
                             [
                                 user.name || `${account.provider} User`,
                                 userEmail,
@@ -149,49 +147,27 @@ export const authOptions: NextAuthOptions = {
                                 user.image || null
                             ]
                         );
-
+        
                         console.log('新用戶已建立, ID:', result.insertId);
                         return true;
+        
                     } catch (error: any) {
-                        // 捕获重复 email 错误
                         if (error.code === 'ER_DUP_ENTRY') {
                             console.error('重复的 email 错误:', error.sqlMessage);
-                            // 可以尝试使用替代 email
-                            const userEmail = `${account.providerAccountId}@${account.provider}.social`;
-
-                            try {
-                                const [result] = await connection.execute<ResultSetHeader>(
-                                    `INSERT INTO users 
-                                     (name, email, provider, provider_id, email_verified, avatar, password) 
-                                     VALUES (?, ?, ?, ?, TRUE, ?, NULL)`,
-                                    [
-                                        user.name || `${account.provider} User`,
-                                        userEmail,
-                                        account.provider,
-                                        account.providerAccountId,
-                                        user.image || null
-                                    ]
-                                );
-                                console.log('使用替代 email 建立新用戶, ID:', result.insertId);
-                                return true;
-                            } catch (retryError) {
-                                console.error('重试建立用户失败:', retryError);
-                                return false;
-                            }
                         }
-                        throw error;
+                        console.error('创建用户错误:', error);
+                        return false;
                     } finally {
                         connection.release();
                     }
                 }
-
+        
                 return true;
             } catch (error) {
                 console.error('登入錯誤:', error);
                 return false;
             }
         },
-
         async jwt({ token, user, account }) {
             if (account) {
                 const connection = await pool.getConnection();

@@ -383,4 +383,3 @@ ALTER TABLE `users` ADD INDEX `idx_phone` (`phone`);
 ALTER TABLE `users` ADD INDEX `idx_provider` (`provider`);
 ALTER TABLE `users` ADD INDEX `idx_created_at` (`created_at`);
 ALTER TABLE `users` ADD INDEX `idx_is_active` (`is_active`);
-
