@@ -80,7 +80,7 @@ export default function RecommendedMovies({ currentMovieId }: RecommendedMoviesP
                 </div>
 
                 {/* 電影網格 */}
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-8 p-4">
                     {movies.map((movie) => (
                         <Link
                             href={`/movies/${movie.id}`}

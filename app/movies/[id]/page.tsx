@@ -124,7 +124,7 @@ export default function MoviePage() {
     };
   }, [isTrailerOpen]);
 
-  // 從 YouTube URL 提取 video ID
+  // 從 YouTube URL 組成 video ID
   const getVideoId = (url: string) => {
     if (!url) return null;
 
@@ -260,17 +260,7 @@ export default function MoviePage() {
                       <span>{movie.release_date}</span>
                     </div>
                   </div>
-                  {/* 觀看預告片按鈕（手機版） */}
-                  {videoId && (
-                    <button
-                      onClick={() => setIsTrailerOpen(true)}
-                      className="md:hidden w-full mb-6 flex items-center justify-center gap-2 px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold transition-all shadow-lg"
-                    >
-                      <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M8 5v14l11-7z" />
-                      </svg>
-                    </button>
-                  )}
+              
                   {movie.description && (
                     <div className="mb-6">
                       <h3 className="text-xl font-bold mb-3">劇情簡介</h3>
@@ -346,7 +336,7 @@ export default function MoviePage() {
       <RecommendedMovies currentMovieId={movieId} />
       {isTrailerOpen && videoId && (
         <div
-          className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-100 animate-fadeIn "
+          className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 md:p-8  animate-fadeIn "
           onClick={() => setIsTrailerOpen(false)}
         >
           <div
@@ -356,8 +346,8 @@ export default function MoviePage() {
             {/* 關閉按鈕 */}
             <button
               onClick={() => setIsTrailerOpen(false)}
-              className="absolute -top-14 right-0 text-white hover:text-red-500 transition-colors group"
-            >
+              className="absolute -top-10 md:-top-14 right-0 text-white hover:text-red-500 transition-colors group"
+              >
               <div className="flex items-center gap-2">
                 <div className="rounded-full transition-colors cursor-pointer">
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
